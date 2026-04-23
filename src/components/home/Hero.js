@@ -1,8 +1,8 @@
 export default function Hero() {
   return (
-    <section className="bg-primary text-white py-24 md:py-32 px-6">
+    <section className="bg-primary text-white py-24 md:py-32 px-8">
       <div className="max-w-5xl mx-auto text-center">
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
           Your Files. <span className="text-secondary italic">Finally</span> Under Control.
         </h1>
         <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-12 leading-relaxed">
