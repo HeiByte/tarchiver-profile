@@ -1,3 +1,5 @@
+import ExperimentPage from "@/features/experiment/ExperimentPage";
+
 export default function Experiment() {
-  return <div>Halaman Experiment (Coming Soon)</div>;
+  return <ExperimentPage></ExperimentPage>;
 }

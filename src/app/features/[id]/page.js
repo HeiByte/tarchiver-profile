@@ -1,10 +1,11 @@
 import { use } from "react";
+import {FileType,Folder, Zap, Check} from "lucide-react";
 
 const features = {
   "auto-naming": {
     title: "Automatic Naming",
     desc: "Every file follows a clear and predictable format. No manual renaming needed.",
-    icon: "📝",
+    icon: FileType,
     color: "from-blue-500 to-cyan-400",
     how: [
       "System detects file type automatically",
@@ -21,7 +22,7 @@ const features = {
   "flat-structure": {
     title: "Flat Structure",
     desc: "No deep folder trees. Just a clean, direct system that makes sense.",
-    icon: "📂",
+    icon: Folder,
     color: "from-purple-500 to-pink-500",
     how: [
       "All files stored in a single logical layer",
@@ -34,7 +35,7 @@ const features = {
   "instant-organization": {
     title: "Instant Organization",
     desc: "Upload your file, and the system takes care of the rest.",
-    icon: "⚡",
+    icon: Zap,
     color: "from-orange-500 to-yellow-400",
     how: [
       "File uploaded → system scans metadata",
@@ -51,12 +52,16 @@ const features = {
 
 export default function Page({ params }) {
   const { id } = use(params);
-  const data = features[id];
+ const data = features[id];
+
+if (!data) return <div>Feature not found</div>;
+
+const Icon = data.icon;
 
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-10 text-center bg-slate-50">
-        <div className="text-6xl mb-6">🏜️</div>
+        <div className="text-6xl mb-6"></div>
         <h1 className="text-2xl font-bold text-slate-800">Feature not found</h1>
         <p className="text-slate-500 mb-8">
           The page you are looking for doesn't exist or has been moved.
@@ -92,8 +97,7 @@ export default function Page({ params }) {
           <div
             className={`flex-shrink-0 w-24 h-24 rounded-3xl bg-gradient-to-br ${data.color} flex items-center justify-center text-5xl shadow-xl shadow-slate-200`}
           >
-            {/* Nanti pasang Icon utama di sini */}
-            {data.icon}
+            <Icon className="w-10 h-10 text-white" />
           </div>
 
           <div className="text-center md:text-left">
@@ -116,9 +120,7 @@ export default function Page({ params }) {
             <ul className="space-y-5">
               {data.how.map((item, i) => (
                 <li key={i} className="flex items-start gap-4">
-                  {/* ICON PLACEHOLDER - HOW */}
                   <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-md bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-                    {/* Taruh Icon Step/Number di sini */}
                     <span className="text-[10px] font-bold">{i + 1}</span>
                   </div>
                   <span className="text-slate-600 leading-snug">{item}</span>
@@ -127,7 +129,7 @@ export default function Page({ params }) {
             </ul>
           </section>
 
-          {/* Key Benefits Section */}
+          {/* Benefits  */}
           <section className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 mb-6">
               Key Benefits
@@ -135,22 +137,9 @@ export default function Page({ params }) {
             <ul className="space-y-5">
               {data.benefit.map((item, i) => (
                 <li key={i} className="flex items-start gap-4">
-                  {/* ICON PLACEHOLDER - BENEFIT */}
+                  {/* ICON PLACEHOLDER */}
                   <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                    {/* Taruh Icon Checkmark di sini */}
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                    <Check className="w-3.5 h-3.5"/>
                   </div>
                   <span className="text-slate-600 leading-snug">{item}</span>
                 </li>
