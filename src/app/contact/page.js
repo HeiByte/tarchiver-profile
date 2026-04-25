@@ -1,6 +1,4 @@
-// export default function Contact() {
-//   return <div>Halaman Contact (Coming Soon)</div>;
-// }
+
 import React from 'react';
 import Image from 'next/image';
 import gambar6 from '@/assets/gambar6.jpg';
@@ -12,7 +10,6 @@ export default function ContactPage() {
         
         <div className="grid lg:grid-cols-2 gap-24 items-center">
           
-          {/* Left Column: Info */}
           <div>
             <header className="mb-12">
               <h2 className="text-sm font-bold tracking-widest uppercase text-hover mb-6 flex items-center">
@@ -59,7 +56,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right Column: Form */}
+
           <div className="bg-slate-50 p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm relative">
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-secondary rounded-full flex items-center justify-center text-primary font-black text-2xl rotate-12 shadow-lg">
               Hi!
