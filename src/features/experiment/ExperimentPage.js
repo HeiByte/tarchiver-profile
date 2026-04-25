@@ -29,7 +29,7 @@ export default function ExperimentPage() {
   return (
     <div className="max-w mx-auto p-4 md:p-8 min-h-screen bg-gray-50">
       <h1 className="text-primary text-center uppercase p-2 text-2xl tracking-widest mb-6">
-        Cari dan Temukan Artikel
+        Browse Articles
       </h1>
       <div className="mb-6">
         <input
@@ -45,7 +45,7 @@ export default function ExperimentPage() {
         {/* Kolom Hasil Pencarian */}
         <div className="space-y-4 overflow-y-auto max-h-[80vh] pr-2 custom-scrollbar">
           <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">
-            Hasil Pencarian
+            Search Results
           </h2>
           {results.map((item) => (
             <div
@@ -95,7 +95,7 @@ export default function ExperimentPage() {
             </div>
           ) : (
             <div className="hidden md:flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-2xl text-gray-400">
-              <p>Pilih artikel untuk melihat detail</p>
+              <p>Select an article to view details</p>
             </div>
           )}
         </div>
