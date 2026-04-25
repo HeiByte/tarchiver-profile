@@ -1,3 +1,11 @@
+import ServiceHero from "@/components/services/ServiceHero";
+import ServiceList from "@/components/services/ServiceList";
+
 export default function Services() {
-  return <div>Halaman Services (Coming Soon)</div>;
+  return (
+    <>
+      <ServiceHero />
+      <ServiceList />
+    </>
+  );
 }
