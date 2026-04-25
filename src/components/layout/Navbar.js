@@ -19,7 +19,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-primary border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Nama Aplikasi / Logo */}
-        <div className="text-xl font-bold text-white-600">
+        <div className="text-xl font-bold text-white">
           Tarchiver
         </div>
 

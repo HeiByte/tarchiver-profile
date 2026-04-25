@@ -6,13 +6,13 @@ export const metadata = {
   description: "Company Profile website team 3",
 };
 
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-         <Navbar></Navbar>
-        {children}</body>
+        <Navbar></Navbar>
+        {children}
+      </body>
     </html>
   );
 }
