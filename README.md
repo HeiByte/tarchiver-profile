@@ -1,40 +1,82 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Tarchiver Lite – Company Profile
 
-## Getting Started
+## 📌 Overview
 
-First, run the development server:
+Tarchiver Lite is a company profile website that introduces a conceptual file management system designed to simplify file organization through automated structure and consistent naming.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The project focuses on presenting a clear product narrative, strong branding, and a structured user interface.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🎯 Project Scope
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project includes:
 
-## Learn More
+* Multi-page company profile:
 
-To learn more about Next.js, take a look at the following resources:
+  * `/` (Home)
+  * `/about`
+  * `/services`
+  * `/contact`
+* Dynamic feature pages
+* Structured layout with reusable components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ⚙️ Technical Implementation
 
-## Deploy on Vercel
+### ✅ App Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Built using Next.js App Router with organized routing structure:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# tarchiver-profile
->>>>>>> fcd3de5c7f1d5ba4f050a5328b5f9830b30d0eff
+* `app/layout.js` for global layout
+* Route-based page structure
+* Nested routing for feature pages
+
+---
+
+### 🔁 Dynamic Routing
+
+Dynamic routes are implemented using:
+
+* `/features/[id]`
+
+Example:
+
+* `/features/auto-naming`
+
+Each page dynamically renders content based on the selected feature.
+
+---
+
+### 🧩 Components
+
+* **Server Components**
+  Used for rendering pages efficiently by default.
+
+* **Client Components**
+  Used for interactive UI elements where needed.
+
+---
+
+
+## 🚀 Tech Stack
+
+* Next.js (App Router)
+* React
+* JavaScript
+* CSS / Tailwind
+
+---
+
+
+
+## 👤 Teams
+* Iqbal Maulana
+* Ihsan Nuryansyah
+* Ipul Saepullah
+---
+
+## 📝 License
+
+For demonstration and development purposes.
