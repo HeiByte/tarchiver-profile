@@ -4,7 +4,7 @@ import MainContent from "@/components/dashboard/MainContent";
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col bg-white">
+    <div className="flex flex-col bg-white h-screen">
       <NavDash />
       <Header />
       <MainContent />
