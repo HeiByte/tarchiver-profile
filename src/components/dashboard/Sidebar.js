@@ -14,9 +14,9 @@ function SidebarItem({ icon, label, active = false }) {
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 h-screen bg-amber-300 p-6 flex flex-col gap-8 shadow-lg">
+    <aside className="w-64 h-screen bg-amber-300 p-6 flex flex-col gap-8 shadow-lg-black">
       {/* Logo */}
-      <div className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+      <div className="text-2xl font-bold text-amber-900 flex items-center gap-2  p-6">
         <span className="bg-white p-2 rounded-lg text-base">🚀</span> 
         MyApps
       </div>
