@@ -1,3 +1,5 @@
+"use client";
+
 function SidebarItem({ icon, label, active = false }) {
   return (
     <button className={`
@@ -12,6 +14,8 @@ function SidebarItem({ icon, label, active = false }) {
   );
 }
 
+
+
 export default function Sidebar() {
   return (
     <aside className="w-64 h-screen bg-amber-300 p-6 flex flex-col gap-8 shadow-lg-black">
@@ -23,11 +27,12 @@ export default function Sidebar() {
 
       {/* List Button/Menu */}
       <nav className="flex flex-col gap-2">
-        <SidebarItem icon="+" label="Create"/>
+        <SidebarItem icon="+" label="Create" />
         <SidebarItem icon="🏠" label="Dashboard" active />
         <SidebarItem icon="📁" label="My Files" />
         <SidebarItem icon="🗑️" label="Trash" />
       </nav>
     </aside>
+    
   );
 }
