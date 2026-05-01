@@ -1,4 +1,5 @@
 "use client";
+import { usePathname, useRouter } from "next/navigation";
 
 function SidebarItem({ icon, label, active = false, onClick }) {
   return (
@@ -20,6 +21,22 @@ function SidebarItem({ icon, label, active = false, onClick }) {
 }
 
 export default function Sidebar({ onCreateClick }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  const isFolderRoute = pathname?.startsWith("/dashboard/folder/");
+
+  const handleTopButtonClick = () => {
+    if (isFolderRoute) {
+      // Trigger global file upload logic
+      document.getElementById("global-file-upload")?.click();
+    } else {
+      onCreateClick();
+    }
+  };
+
+  const isDashboardActive = pathname === "/dashboard" || pathname === "/dashboard/";
+
   return (
     <aside className="w-64 h-screen bg-amber-300 p-6 flex flex-col gap-8 shadow-lg-black">
       {/* Logo */}
@@ -30,9 +47,13 @@ export default function Sidebar({ onCreateClick }) {
 
       {/* List Button/Menu */}
       <nav className="flex flex-col gap-2">
-        <SidebarItem icon="+" label="Create" onClick={onCreateClick} />
-        <SidebarItem icon="🏠" label="Dashboard" active />
-        <SidebarItem icon="📁" label="My Files" />
+        <SidebarItem 
+            icon={isFolderRoute ? "📤" : "+"} 
+            label={isFolderRoute ? "Upload Files" : "Create Folder"} 
+            onClick={handleTopButtonClick} 
+        />
+        <SidebarItem icon="🏠" label="Dashboard" active={isDashboardActive} onClick={() => router.push("/dashboard")} />
+        <SidebarItem icon="📁" label="My Files" active={isFolderRoute || isDashboardActive} onClick={() => router.push("/dashboard")} />
         <SidebarItem icon="🗑️" label="Trash" />
       </nav>
     </aside>

@@ -1,16 +1,31 @@
 "use client";
 import { useState } from "react";
+import { useFolders } from "@/context/FolderContext";
 
-export default function CreateFolder({ isOpen, onClose, onSubmit }) {
+export default function CreateFolder({ isOpen, onClose }) {
+  const { setFolders } = useFolders(); // 🔥 ambil dari context
   const [folderName, setFolderName] = useState("");
   const [folderType, setFolderType] = useState("all");
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    onSubmit(folderName, folderType);
+    if (folderName.trim() === "") {
+      return alert("Nama tidak boleh kosong!");
+    }
+
+    const newFolder = {
+      id: Date.now(),
+      name: folderName,
+      type: folderType,
+      files: [],
+    };
+
+    setFolders((prev) => [...prev, newFolder]); // 🔥 langsung update global state
+
     setFolderName("");
     setFolderType("all");
+    onClose(); // tutup modal
   };
 
   return (
@@ -18,7 +33,6 @@ export default function CreateFolder({ isOpen, onClose, onSubmit }) {
       <div className="bg-white p-6 border-4 border-black w-2xl">
         <h2 className="font-bold text-xl mb-4 text-black">Create Folder</h2>
 
-        {/* Input nama */}
         <input
           type="text"
           placeholder="Name..."
@@ -27,11 +41,9 @@ export default function CreateFolder({ isOpen, onClose, onSubmit }) {
           onChange={(e) => setFolderName(e.target.value)}
         />
 
-        {/* Intruction */}
         <p className="font-bold mb-2">Select one:</p>
-        {/* Radio Group */}
-        <div className="mb-8 flex  items-center">
-          
+
+        <div className="mb-8 flex items-center gap-4">
           <label className="flex items-center gap-2">
             <input
               type="radio"
@@ -81,6 +93,7 @@ export default function CreateFolder({ isOpen, onClose, onSubmit }) {
           <button onClick={onClose} className="px-3 py-1 border-2 border-black">
             Batal
           </button>
+
           <button
             onClick={handleSubmit}
             className="px-3 py-1 bg-blue-500 text-white border-2 border-black"
