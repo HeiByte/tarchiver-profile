@@ -35,15 +35,15 @@ export default function LoginForm() {
 
       {/* BUTTON */}
       <Link href="/dashboard">
-      <button className="w-full bg-primary py-3 rounded-lg font-semibold hover:bg-white transition-all mb-6 hover:border border-primary hover:text-primary">
-        Login
-      </button>
+        <button className="w-full border border-primary bg-primary py-3 rounded-lg font-semibold hover:bg-white transition-all mb-6 hover:border border-primary hover:text-primary">
+          Login
+        </button>
       </Link>
 
       {/* SIGNUP */}
       <p className="text-center text-black mb-6">
         Don't hove an account?{" "}
-        <Link href="#" className="font-semibold text-primary">
+        <Link href="/register" className="font-semibold text-primary">
           Signup
         </Link>
       </p>
