@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import CreateFolder from "./CreateFolder";
+import { useFolders } from "@/context/FolderContext";
+import { EllipsisVertical } from "lucide-react";
 
 export default function MainContent() {
-  const [folders, setFolders] = useState([]);
+  const { folders } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSave = (name, type) => {
@@ -56,7 +58,7 @@ function EmptyState({ onAdd }) {
 
 function FolderGrid({ items }) {
   return (
-    <div className="flex flex-wrap gap-6">
+    <div className="flex flex-col flex-wrap gap-6">
       {items.map((item) => (
         <FolderItem key={item.id} name={item.name} type={item.type} />
       ))}
@@ -69,6 +71,9 @@ function FolderItem({ name }) {
     <div className="flex items-center gap-4">
       <div className="w-16 h-12 bg-amber-400 border-4 border-black rounded shadow-md"></div>
       <span className="font-bold text-sm mt-1 text-black">{name}</span>
+      <button>
+        <EllipsisVertical />
+      </button>
     </div>
   );
 }
