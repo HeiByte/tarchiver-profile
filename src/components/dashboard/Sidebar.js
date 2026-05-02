@@ -1,16 +1,20 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, FolderOpenDot, Trash, Upload } from "lucide-react";
 
-function SidebarItem({ icon, label, active = false, onClick }) {
+
+function SidebarItem({ icon, label, active = false, onClick, customBg }) {
   return (
     <button
       onClick={onClick}
       className={`
-      flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full
+      flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full text-white
       ${
-        active
-          ? "bg-amber-400 text-amber-950 font-bold shadow-sm"
-          : "hover:bg-amber-200 text-amber-800"
+        customBg
+          ? customBg
+          : active
+            ? "bg-[#485F70] text-white font-bold shadow-sm"
+            : "hover:bg-[#758da0] text-white"
       }
     `}
     >
@@ -23,38 +27,52 @@ function SidebarItem({ icon, label, active = false, onClick }) {
 export default function Sidebar({ onCreateClick }) {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const isFolderRoute = pathname?.startsWith("/dashboard/folder/");
 
   const handleTopButtonClick = () => {
     if (isFolderRoute) {
-      // Trigger global file upload logic
       document.getElementById("global-file-upload")?.click();
     } else {
       onCreateClick();
     }
   };
 
-  const isDashboardActive = pathname === "/dashboard" || pathname === "/dashboard/";
+  const isDashboardActive =
+    pathname === "/dashboard" || pathname === "/dashboard/";
 
   return (
-    <aside className="w-64 h-screen bg-amber-300 p-6 flex flex-col gap-8 shadow-lg-black">
+    <aside className="w-64 h-screen bg-[#1E293B] p-6 flex flex-col gap-8 shadow-lg-black">
       {/* Logo */}
-      <div className="text-2xl font-bold text-amber-900 flex items-center gap-2  p-6">
-        <span className="bg-white p-2 rounded-lg text-base">🚀</span>
-        MyApps
+      <div className="text-2xl font-bold text-white flex items-center gap-2  p-6">
+        <img
+          src="logo2.png"
+          alt="MyApps Logo"
+          className="w-30 h-30 ml-4 object-contain"
+        />
       </div>
 
       {/* List Button/Menu */}
-      <nav className="flex flex-col gap-2">
-        <SidebarItem 
-            icon={isFolderRoute ? "📤" : "+"} 
-            label={isFolderRoute ? "Upload Files" : "Create Folder"} 
-            onClick={handleTopButtonClick} 
+      <nav className="flex flex-col gap-2 text-white items-center">
+        <SidebarItem
+          icon={isFolderRoute ? <Upload /> : "+"}
+          label={isFolderRoute ? " " : " "}
+          onClick={handleTopButtonClick}
+          customBg="bg-[#3B82F6] flex justify-center items-center text-2xl"
         />
-        <SidebarItem icon="🏠" label="Dashboard" active={isDashboardActive} onClick={() => router.push("/dashboard")} />
-        <SidebarItem icon="📁" label="My Files" active={isFolderRoute || isDashboardActive} onClick={() => router.push("/dashboard")} />
-        <SidebarItem icon="🗑️" label="Trash" />
+        <SidebarItem
+          icon={<LayoutDashboard fill="white" />}
+          label="Dashboard"
+          active={isDashboardActive}
+          onClick={() => router.push("/dashboard")}
+        />
+        <SidebarItem
+          icon={<FolderOpenDot fill="white" />}
+          label="My Files"
+          active={isFolderRoute || isDashboardActive}
+          onClick={() => router.push("/dashboard")}
+        />
+        <SidebarItem icon={<Trash fill="white" />} label="Trash" />
       </nav>
     </aside>
   );

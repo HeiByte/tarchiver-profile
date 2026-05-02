@@ -22,44 +22,37 @@ export default function CreateFolder({ isOpen, onClose }) {
       files: [],
     };
 
-<<<<<<< HEAD
-    setFolders((prev) => [...prev, newFolder]); 
+    setFolders((prev) => [...prev, newFolder]);
 
     setFolderName("");
     setFolderType("all");
-    onClose(); 
-=======
-    setFolders((prev) => [...prev, newFolder]); // 🔥 langsung update global state
-
-    setFolderName("");
-    setFolderType("all");
-    onClose(); // tutup modal
->>>>>>> develop
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-6">
-      <div className="bg-white p-6 border-4 border-black w-2xl">
+      <div className="bg-white rounded p-6 w-2xl">
         <h2 className="font-bold text-xl mb-4 text-black">Create Folder</h2>
 
         <input
           type="text"
           placeholder="Name..."
-          className="w-full p-2 border-2 border-black mb-4 text-black"
+          className="w-full p-4 border-2 rounded-md border-blue-600 mb-4 text-black"
           value={folderName}
           onChange={(e) => setFolderName(e.target.value)}
         />
 
-        <p className="font-bold mb-2">Select one:</p>
+        <p className="mb-2 text-[#041C41]">Select one</p>
 
-        <div className="mb-8 flex items-center gap-4">
-          <label className="flex items-center gap-2">
+        <div className="mb-8 flex items-center gap-4 text-black cursor-pointer">
+          <label className="flex items-center gap-2 ">
             <input
               type="radio"
               name="folderType"
               value="all"
               checked={folderType === "all"}
               onChange={(e) => setFolderType(e.target.value)}
+              className="w-3 h-3 appearance-none border-1 border-black rounded-full checked:bg-red-600  checked:border-red-700 focus:ring-2 focus:ring-red-400 transition-all cursor-pointer"
             />
             All
           </label>
@@ -71,6 +64,7 @@ export default function CreateFolder({ isOpen, onClose }) {
               value="doc"
               checked={folderType === "doc"}
               onChange={(e) => setFolderType(e.target.value)}
+              className="w-3 h-3 appearance-none border-1 border-black rounded-full checked:bg-red-600  checked:border-red-700 focus:ring-2 focus:ring-red-400 transition-all cursor-pointer"
             />
             Doc only
           </label>
@@ -82,6 +76,7 @@ export default function CreateFolder({ isOpen, onClose }) {
               value="media"
               checked={folderType === "media"}
               onChange={(e) => setFolderType(e.target.value)}
+              className="w-3 h-3 appearance-none border-1 border-black rounded-full checked:bg-red-600  checked:border-red-700 focus:ring-2 focus:ring-red-400 transition-all cursor-pointer"
             />
             Mp4 / Mp3
           </label>
@@ -93,21 +88,22 @@ export default function CreateFolder({ isOpen, onClose }) {
               value="image"
               checked={folderType === "image"}
               onChange={(e) => setFolderType(e.target.value)}
+              className="w-3 h-3 appearance-none border-1 border-black rounded-full checked:bg-red-600  checked:border-red-700 focus:ring-2 focus:ring-red-400 transition-all cursor-pointer"
             />
             Image only
           </label>
         </div>
 
         <div className="flex justify-end gap-3 mt-10">
-          <button onClick={onClose} className="px-3 py-1 border-2 border-black">
-            Batal
+          <button onClick={onClose} className="px-3 py-1 text-red-600 hover:text-red-400">
+            Cancel
           </button>
 
           <button
             onClick={handleSubmit}
-            className="px-3 py-1 bg-blue-500 text-white border-2 border-black"
+            className="px-3 py-1 bg-blue-500 text-white border-2 rounded-md hover:bg-blue-400"
           >
-            Simpan
+            Create
           </button>
         </div>
       </div>
