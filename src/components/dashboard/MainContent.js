@@ -2,7 +2,7 @@
 import { useState } from "react";
 import CreateFolder from "./CreateFolder";
 import { useFolders } from "@/context/FolderContext";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Folder } from "lucide-react";
 import Link from "next/link";
 import ConfirmModal from "./ConfirmModal";
 
@@ -13,14 +13,14 @@ export default function MainContent() {
 
   const handleSave = (name, type) => {
     if (name.trim() === "") {
-      showToast("Nama folder tidak boleh kosong!", "error");
+      showToast("Nama required!", "error");
       return;
     }
 
-    // Cek duplikasi nama folder (case-insensitive)
+    // Cek duplikasi nama folder 
     const isDuplicate = folders.some((f) => f.name.toLowerCase() === name.trim().toLowerCase());
     if (isDuplicate) {
-      showToast("Nama folder sudah digunakan! Silakan gunakan nama lain.", "error");
+      showToast("Nama alredy taken.", "error");
       return;
     }
 
@@ -37,7 +37,7 @@ export default function MainContent() {
     };
 
     setFolders((prev) => [...prev, newFolder]); 
-    showToast("Folder berhasil dibuat!", "success");
+    showToast("Folder created!", "success");
     setIsModalOpen(false);
   };
 
@@ -50,13 +50,13 @@ export default function MainContent() {
       // Frontend akan membuangnya dari state jika respon dari backend sukses (200).
       setFolders((prev) => prev.filter((f) => f.id !== folderToDelete));
       setFolderToDelete(null);
-      showToast("Folder berhasil dihapus!", "success");
+      showToast("Folder deleted!", "success");
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-blue-400 overflow-hidden">
-      <div className="flex-1 p-8 bg-white m-8 border-black border-4 rounded overflow-hidden">
+    <div className="flex flex-col h-screen bg-white overflow-hidden">
+      <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden">
         {folders.length === 0 ? (
           <EmptyState onAdd={() => setIsModalOpen(true)} />
         ) : (
@@ -72,8 +72,8 @@ export default function MainContent() {
           isOpen={!!folderToDelete}
           onClose={() => setFolderToDelete(null)}
           onConfirm={handleDeleteConfirm}
-          title="Hapus Folder"
-          message="Apakah Anda setuju menghapus folder ini beserta seluruh isinya?"
+          title="Delete Folder"
+          message="Delete this folder and all its contents?"
         />
       </div>
     </div>
@@ -83,12 +83,11 @@ export default function MainContent() {
 function EmptyState({ onAdd }) {
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <p className="mb-4 font-bold">Folder masih kosong...</p>
       <button
         onClick={onAdd}
-        className="px-4 py-2 bg-blue-500 text-white border-2 border-black rounded shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        className="px-6 py-2 bg-[#3B82F6] text-white border-2 rounded-md hover:bg-blue-600"
       >
-        Create
+        Create +
       </button>
     </div>
   );
@@ -126,7 +125,7 @@ function FolderItem({ id, name, onDeleteClick }) {
         className="flex items-center gap-4 cursor-pointer relative max-w-sm hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all p-2 rounded"
         onMouseLeave={() => setMenuOpen(false)}
       >
-        <div className="w-16 h-12 bg-amber-400 border-4 border-black rounded shadow-md"></div>
+        <Folder className="w-10 h-10 fill-black" />
 
         <span className="font-bold text-sm mt-1 text-black flex-1 truncate">
           {name}
@@ -140,10 +139,10 @@ function FolderItem({ id, name, onDeleteClick }) {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-12 top-10 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10 w-32 rounded overflow-hidden">
+          <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
             <button 
               onClick={handleDeleteClick} 
-              className="w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 font-bold border-b-2 border-transparent hover:border-black transition-all"
+              className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2  border-black transition-all"
             >
               Delete
             </button>
