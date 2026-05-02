@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useFolders } from "@/context/FolderContext";
 
 export default function CreateFolder({ isOpen, onClose }) {
-  const { setFolders } = useFolders(); // 🔥 ambil dari context
+  const { setFolders } = useFolders();
   const [folderName, setFolderName] = useState("");
   const [folderType, setFolderType] = useState("all");
 
@@ -21,11 +21,11 @@ export default function CreateFolder({ isOpen, onClose }) {
       files: [],
     };
 
-    setFolders((prev) => [...prev, newFolder]); // 🔥 langsung update global state
+    setFolders((prev) => [...prev, newFolder]); 
 
     setFolderName("");
     setFolderType("all");
-    onClose(); // tutup modal
+    onClose(); 
   };
 
   return (

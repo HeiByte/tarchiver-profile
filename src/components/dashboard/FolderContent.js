@@ -17,10 +17,10 @@ export default function FolderContent({ folderId }) {
     return (
       <div className="flex flex-col h-full bg-blue-400 overflow-hidden">
         <div className="flex-1 p-8 bg-white m-8 border-black border-4 rounded overflow-hidden flex flex-col items-center justify-center">
-            <p className="font-bold text-lg text-black mb-4">Folder tidak ditemukan.</p>
+            <p className="font-bold text-lg text-black mb-4">Folder Not Found.</p>
             <Link href="/dashboard">
                 <button className="px-4 py-2 bg-blue-500 text-white border-2 border-black rounded shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    Kembali ke Dashboard
+                    Back to Dashboard
                 </button>
             </Link>
         </div>
@@ -60,7 +60,7 @@ export default function FolderContent({ folderId }) {
         return;
       }
 
-      const newFileId = Date.now(); // Tetap menggunakan Date.now() untuk internal React key ID
+      const newFileId = Date.now(); 
 
       // Automatisasi urutan file 01, 02, 03... (berdasarkan jumlah file yang sudah ada di folder ini)
       const fileSequence = String(folder.files.length + 1).padStart(2, '0');
@@ -100,7 +100,7 @@ export default function FolderContent({ folderId }) {
       
       showToast("Berhasil diupload dengan struktur penamaan yang valid!", "success");
       
-      // Reset input value to allow uploading the same file again
+      
       e.target.value = "";
     }
   };
