@@ -4,6 +4,7 @@ import { useFolders } from "@/context/FolderContext";
 
 export default function CreateFolder({ isOpen, onClose }) {
   const { setFolders } = useFolders();
+
   const [folderName, setFolderName] = useState("");
   const [folderType, setFolderType] = useState("all");
 
@@ -21,11 +22,19 @@ export default function CreateFolder({ isOpen, onClose }) {
       files: [],
     };
 
+<<<<<<< HEAD
     setFolders((prev) => [...prev, newFolder]); 
 
     setFolderName("");
     setFolderType("all");
     onClose(); 
+=======
+    setFolders((prev) => [...prev, newFolder]); // 🔥 langsung update global state
+
+    setFolderName("");
+    setFolderType("all");
+    onClose(); // tutup modal
+>>>>>>> develop
   };
 
   return (

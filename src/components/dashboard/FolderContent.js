@@ -21,6 +21,7 @@ export default function FolderContent({ folderId }) {
             <Link href="/dashboard">
                 <button className="px-4 py-2 bg-blue-500 text-white border-2 border-black rounded shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     Back to Dashboard
+
                 </button>
             </Link>
         </div>
@@ -60,7 +61,11 @@ export default function FolderContent({ folderId }) {
         return;
       }
 
+<<<<<<< HEAD
       const newFileId = Date.now(); 
+=======
+      const newFileId = Date.now(); // Tetap menggunakan Date.now() untuk internal React key ID
+>>>>>>> develop
 
       // Automatisasi urutan file 01, 02, 03... (berdasarkan jumlah file yang sudah ada di folder ini)
       const fileSequence = String(folder.files.length + 1).padStart(2, '0');
@@ -100,7 +105,11 @@ export default function FolderContent({ folderId }) {
       
       showToast("Berhasil diupload dengan struktur penamaan yang valid!", "success");
       
+<<<<<<< HEAD
       
+=======
+      // Reset input value to allow uploading the same file again
+>>>>>>> develop
       e.target.value = "";
     }
   };
