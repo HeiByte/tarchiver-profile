@@ -83,6 +83,9 @@ export default function LoginForm() {
         />
       </div>
 
+      {/* ERROR */}
+      {error && (<p className="text-red-500 text-sm mb-4">{error}</p>)}
+
       {/* FORGOT */}
       <div className="text-right mb-6">
         <Link href="#" className="text-primary text-sm hover:underline">
