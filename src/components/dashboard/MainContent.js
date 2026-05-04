@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 import CreateFolder from "./CreateFolder";
 import { useFolders } from "@/context/FolderContext";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Folder } from "lucide-react";
 import Link from "next/link";
 import ConfirmModal from "./ConfirmModal";
 
@@ -10,57 +11,150 @@ export default function MainContent() {
   const { folders, setFolders, showToast } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = (name, type) => {
-    if (name.trim() === "") {
-      showToast("Nama folder tidak boleh kosong!", "error");
-      return;
-    }
+  const supabase = createClient();
 
-    // Cek duplikasi nama folder (case-insensitive)
-    const isDuplicate = folders.some((f) => f.name.toLowerCase() === name.trim().toLowerCase());
-    if (isDuplicate) {
-      showToast("Nama folder sudah digunakan! Silakan gunakan nama lain.", "error");
-      return;
-    }
+  useEffect(() => {
+    const fetchFolders = async () => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
+        if (!user) return;
 
-    // [INTEGRASI BACKEND]
-    // Endpoint: POST /api/folders
-    // Payload Data (yg dikirim frontend): { name: "nama folder", type: "tipe folder misal: doc/media/image" } (application/json)
-    // Expected Response: Backend harus me-return data object folder (beserta ID aslinya dari Database).
-    const newFolder = {
-      id: Date.now(), // ⚠️ id ini dibikin sementara di frontend, aslinya nanti direplace pake response backend
-      name,
-      type,
-      files: [], 
+        const { data, error } = await supabase
+          .from("folders")
+          .select("*, files(*)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        const foldersWithFiles = (data || []).map((f) => ({
+          ...f,
+          files: f.files || [],
+        }));
+
+        setFolders(foldersWithFiles);
+      } catch (error) {
+        showToast("Gagal memuat folder: " + error.message, "error");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setFolders((prev) => [...prev, newFolder]); 
-    showToast("Folder berhasil dibuat!", "success");
-    setIsModalOpen(false);
+    fetchFolders();
+  }, []);
+
+  const handleSave = async (name, type) => {
+    if (name.trim() === "") {
+      showToast("Nama required!", "error");
+      return;
+    }
+
+    const isDuplicate = folders.some(
+      (f) => f.name.toLowerCase() === name.trim().toLowerCase()
+    );
+    if (isDuplicate) {
+      showToast("Nama already taken.", "error");
+      return;
+    }
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("folders")
+        .insert([
+          {
+            name: name.trim(),
+            type: type,        
+            user_id: user.id, 
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setFolders((prev) => [...prev, { ...data, files: [] }]);
+      showToast("Folder created!", "success");
+      setIsModalOpen(false);
+    } catch (error) {
+      showToast(error.message, "error");
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    if (folderToDelete) {
-      // [INTEGRASI BACKEND]
-      // Endpoint: DELETE /api/folders/${folderToDelete}
-      // Payload Data: Kosong (ID diambil dari URL param/dinamis)
-      // Expected Response: Status 200 OK (berhasil dihapus di database).
-      // Frontend akan membuangnya dari state jika respon dari backend sukses (200).
+ 
+  const handleDeleteConfirm = async () => {
+    if (!folderToDelete) return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+   
+      const targetFolder = folders.find((f) => f.id === folderToDelete);
+
+      if (targetFolder?.files?.length > 0) {
+        const storagePaths = targetFolder.files
+          .map((f) => f.storage_path)
+          .filter(Boolean);
+
+        if (storagePaths.length > 0) {
+          const { error: storageError } = await supabase.storage
+            .from("tarchive-bucket")
+            .remove(storagePaths);
+
+          
+          if (storageError) {
+            console.warn("Storage delete warning:", storageError.message);
+          }
+        }
+      }
+
+    
+      const { error } = await supabase
+        .from("folders")
+        .delete()
+        .eq("id", folderToDelete);
+
+      if (error) throw error;
+
       setFolders((prev) => prev.filter((f) => f.id !== folderToDelete));
       setFolderToDelete(null);
-      showToast("Folder berhasil dihapus!", "success");
+      showToast("Folder deleted!", "success");
+    } catch (error) {
+      showToast(error.message, "error");
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-blue-400 overflow-hidden">
-      <div className="flex-1 p-8 bg-white m-8 border-black border-4 rounded overflow-hidden">
-        {folders.length === 0 ? (
+    <div className="flex flex-col h-screen bg-white overflow-hidden">
+      <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden relative">
+
+        {/* Loading state */}
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-3">
+              <span className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+              <p className="text-gray-500 text-sm">Loading folders...</p>
+            </div>
+          </div>
+        ) : folders.length === 0 ? (
           <EmptyState onAdd={() => setIsModalOpen(true)} />
         ) : (
-          <FolderGrid items={folders} onDeleteClick={setFolderToDelete} />
+          
+            <FolderGrid items={folders} onDeleteClick={setFolderToDelete} />
+   
         )}
 
         <CreateFolder
@@ -68,12 +162,13 @@ export default function MainContent() {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleSave}
         />
+
         <ConfirmModal
           isOpen={!!folderToDelete}
           onClose={() => setFolderToDelete(null)}
           onConfirm={handleDeleteConfirm}
-          title="Hapus Folder"
-          message="Apakah Anda setuju menghapus folder ini beserta seluruh isinya?"
+          title="Delete Folder"
+          message="Delete this folder and all its contents?"
         />
       </div>
     </div>
@@ -83,12 +178,11 @@ export default function MainContent() {
 function EmptyState({ onAdd }) {
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <p className="mb-4 font-bold">Folder masih kosong...</p>
       <button
         onClick={onAdd}
-        className="px-4 py-2 bg-blue-500 text-white border-2 border-black rounded shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        className="px-6 py-2 bg-[#3B82F6] text-white border-2 rounded-md hover:bg-blue-600"
       >
-        Create
+        Create +
       </button>
     </div>
   );
@@ -96,9 +190,14 @@ function EmptyState({ onAdd }) {
 
 function FolderGrid({ items, onDeleteClick }) {
   return (
-    <div className="flex flex-col flex-wrap gap-6">
+    <div className="flex flex-col flex-wrap gap-6 overflow-y-auto">
       {items.map((item) => (
-        <FolderItem key={item.id} id={item.id} name={item.name} onDeleteClick={onDeleteClick} />
+        <FolderItem
+          key={item.id}
+          id={item.id}
+          name={item.name}
+          onDeleteClick={onDeleteClick}
+        />
       ))}
     </div>
   );
@@ -122,28 +221,28 @@ function FolderItem({ id, name, onDeleteClick }) {
 
   return (
     <Link href={`/dashboard/folder/${id}`}>
-      <div 
+      <div
         className="flex items-center gap-4 cursor-pointer relative max-w-sm hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all p-2 rounded"
         onMouseLeave={() => setMenuOpen(false)}
       >
-        <div className="w-16 h-12 bg-amber-400 border-4 border-black rounded shadow-md"></div>
+        <Folder className="w-10 h-10 fill-black" />
 
         <span className="font-bold text-sm mt-1 text-black flex-1 truncate">
           {name}
         </span>
 
-        <button 
-          onClick={handleMenuClick} 
+        <button
+          onClick={handleMenuClick}
           className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
         >
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
 
         {menuOpen && (
-          <div className="absolute right-12 top-10 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10 w-32 rounded overflow-hidden">
-            <button 
-              onClick={handleDeleteClick} 
-              className="w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 font-bold border-b-2 border-transparent hover:border-black transition-all"
+          <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
+            <button
+              onClick={handleDeleteClick}
+              className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
             >
               Delete
             </button>
