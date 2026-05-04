@@ -11,6 +11,7 @@ const links = [
   { name: "Services", path: "/services" },
   { name: "Contact", path: "/contact" },
   { name: "Experiment", path: "/experiment" },
+  { name: "Login", path: "/login" },
 ];
 
 export default function Navbar() {
@@ -49,6 +50,15 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* BUTTON LOGIN
+          <Link
+            href="/login"
+            className="ml-4 px-5 py-2 rounded-full bg-secondary text-primary font-semibold hover:bg-yellow-400 transition-all"
+          >
+            Login
+          </Link> */}
+          
         </div>
 
         {/* Mobile Menu */}
