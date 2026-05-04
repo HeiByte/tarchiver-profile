@@ -20,7 +20,7 @@ export default function LoginForm() {
     setErrorMsg("");
 
     try {
-      // Sama dengan Register: Ubah username input menjadi format email virtual
+    
       const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -31,12 +31,12 @@ export default function LoginForm() {
       if (error) throw error;
 
       if (data?.user) {
-        // Jika login sukses, arahkan ke dashboard
+   
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err) {
-      // Mapping error agar lebih user-friendly
+   
       const message =
         err.message === "Invalid login credentials"
           ? "Username or password incorrect."
@@ -61,7 +61,7 @@ export default function LoginForm() {
         <p className="text-red-500 text-xs mb-4 text-center">{errorMsg}</p>
       )}
 
-      {/* USERNAME (Input type tetap email/text sesuai style kamu) */}
+    
       <input
         type="text"
         placeholder="Username"
@@ -83,8 +83,7 @@ export default function LoginForm() {
         />
       </div>
 
-      {/* ERROR */}
-      {error && (<p className="text-red-500 text-sm mb-4">{error}</p>)}
+  
 
       {/* FORGOT */}
       <div className="text-right mb-6">
