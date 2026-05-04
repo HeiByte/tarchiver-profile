@@ -2,14 +2,19 @@
 import { useRef, useState } from "react";
 import { useFolders } from "@/context/FolderContext";
 import { EllipsisVertical, FileText, Upload } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { forwardRef } from "react";
 import ConfirmModal from "./ConfirmModal";
+
+const supabase = createClient();
 
 export default function FolderContent({ folderId }) {
   const { folders, setFolders, showToast } = useFolders();
   const fileInputRef = useRef(null);
   const [fileToDelete, setFileToDelete] = useState(null);
+
+  const [loading, setLoading] = useState(false);
 
   const folder = folders.find((f) => f.id.toString() === folderId);
 
@@ -42,11 +47,10 @@ export default function FolderContent({ folderId }) {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
 
-      // Validasi tipe file ketat mencegah file format yang salah
       let isValid = true;
       if (
         folder.type === "doc" &&
@@ -76,71 +80,114 @@ export default function FolderContent({ folderId }) {
         return;
       }
 
-      const newFileId = Date.now();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("User not authenticated");
 
-      // Automatisasi urutan file 01, 02, 03... (berdasarkan jumlah file yang sudah ada di folder ini)
-      const fileSequence = String(folder.files.length + 1).padStart(2, "0");
+        const fileSequence = String(folder.files.length + 1).padStart(2, "0");
+        const extMatch = file.name.match(/\.([^.]+)$/);
+        const ext = extMatch ? extMatch[1] : "";
 
-      // Automatisasi format nama file: URUTAN_FOLDERNAME_TGLUPLOAD.ext
-      const extMatch = file.name.match(/\.([^.]+)$/);
-      const ext = extMatch ? `.${extMatch[1]}` : "";
+        const folderStr = (folder.name || "UNKNOWN")
+          .toUpperCase()
+          .replace(/[^A-Z0-9]+/g, "_");
 
-      const folderStr = (folder.name || "UNKNOWN")
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, "_");
+        const d = new Date();
+        const tglStr = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
 
-      const d = new Date();
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const tglStr = `${year}${month}${day}`; // Format date to YYYYMMDD
+        const generatedName = `${fileSequence}_${folderStr}_${tglStr}${ext ? "." + ext : ""}`;
+        const storagePath = `${user.id}/${folder.id}/${generatedName}`;
 
-      const generatedName = `${fileSequence}_${folderStr}_${tglStr}${ext}`;
+        const { data: storageData, error: storageError } =
+          await supabase.storage
+            .from("tarchive-bucket")
+            .upload(storagePath, file, { upsert: true });
 
-      // [INTEGRASI BACKEND]
-      // Endpoint: POST /api/folders/${folder.id}/files
-      // Payload Data: FormData (multipart/form-data)
-      //   -> const formData = new FormData();
-      //   -> formData.append("file", file, generatedName); // Kirim file dg nama yang sudah di-format otomatis
-      // Expected Response: Backend me-return data JSON spesifik tentang file (nama, size, tipe, dll).
-      const newFile = {
-        id: newFileId, // ⚠️ id ini dibikin sementara di frontend, aslinya nanti direplace dari response backend
-        name: generatedName,
-        originalName: file.name, // Disimpan barangkali butuh info nama file awalnya
-        size: file.size,
-      };
+        if (storageError) throw storageError;
 
-      setFolders((prev) =>
-        prev.map((f) =>
-          f.id === folder.id ? { ...f, files: [...f.files, newFile] } : f,
-        ),
-      );
+        const { data: dbData, error: dbError } = await supabase
+          .from("files")
+          .insert([
+            {
+              name: generatedName,
+              original_name: file.name,
+              extension: ext,
+              mime_type: file.type,
+              folder_id: folder.id,
+              user_id: user.id,
+              storage_path: storagePath,
+              size: file.size,
+            },
+          ])
+          .select()
+          .single();
 
-      showToast("File uploaded. Valid format");
+        if (dbError) throw dbError;
 
-      e.target.value = "";
+        setFolders((prev) =>
+          prev.map((f) =>
+            f.id === folder.id
+              ? { ...f, files: [...(f.files || []), dbData] }
+              : f,
+          ),
+        );
+
+        showToast("File uploaded successfully!");
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || "An error occurred during upload", "error");
+      } finally {
+        e.target.value = "";
+      }
     }
   };
 
-  const handleDeleteConfirm = () => {
-    if (fileToDelete) {
-      // [INTEGRASI BACKEND]
-      // Endpoint: DELETE /api/files/${fileToDelete}
-      //        (atau bisa juga pake DELETE /api/folders/${folder.id}/files/${fileToDelete})
-      // Payload Data: Kosong (ID diambil dari URL parameter)
-      // Expected Response: Status 200 OK (berhasil menghapus file tersebut dari server/storage & di database).
+  const handleDeleteConfirm = async () => {
+    if (!fileToDelete || !fileToDelete.id) {
+      showToast("Gagal: ID File tidak valid", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Hapus dari Storage
+      if (fileToDelete.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from("tarchive-bucket")
+          .remove([fileToDelete.storage_path]);
+
+        if (storageError) throw storageError;
+      }
+
+      // Hapus dari Database
+      const { error: dbError } = await supabase
+        .from("files")
+        .delete()
+        .eq("id", fileToDelete.id);
+
+      if (dbError) throw dbError;
+
+      // Update UI State
       setFolders((prev) =>
         prev.map((f) =>
-          f.id === folder.id
+          f.id === fileToDelete.folder_id
             ? {
                 ...f,
-                files: f.files.filter((file) => file.id !== fileToDelete),
+                files: f.files.filter((file) => file.id !== fileToDelete.id),
               }
             : f,
         ),
       );
+
+      showToast("File deleted permanently", "success");
+    } catch (error) {
+      console.error("Detail Error:", error);
+      showToast("Delete failed: " + error.message, "error");
+    } finally {
       setFileToDelete(null);
-      showToast("File deleted", "success");
+      setLoading(false);
     }
   };
 
@@ -155,17 +202,19 @@ export default function FolderContent({ folderId }) {
           accept={acceptStr}
           onChange={handleFileChange}
         />
+
         {folder.files.length === 0 ? (
           <EmptyStateFile onUpload={handleUploadClick} />
         ) : (
           <FileGrid items={folder.files} onDeleteClick={setFileToDelete} />
         )}
+
         <ConfirmModal
           isOpen={!!fileToDelete}
           onClose={() => setFileToDelete(null)}
           onConfirm={handleDeleteConfirm}
           title="Delete File"
-          message="Delete this file?"
+          message={`Delete "${fileToDelete?.original_name || fileToDelete?.name}"?`}
         />
       </div>
     </div>
@@ -174,11 +223,11 @@ export default function FolderContent({ folderId }) {
 
 const EmptyStateFile = forwardRef(({ onUpload }, ref) => {
   return (
-    <div className="flex flex-col items-center justify-center h-full ">
-      <div className="flex flex-col items-denter justify-center border-2 border-blue-500 m-40 text-center p-20 border-dashed">
+    <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center border-2 border-blue-500 m-40 text-center p-20 border-dashed">
         <button
           onClick={onUpload}
-          className="flex items-center justify-center px-4 mb-4 py-2 text-center  "
+          className="flex items-center justify-center px-4 mb-4 py-2 text-center"
         >
           <Upload className="bg-[#3B82F6] p-4 w-16 h-16 rounded-md hover:bg-blue-400 active:shadow-none active:translate-y-1 transition-all" />
         </button>
@@ -187,25 +236,22 @@ const EmptyStateFile = forwardRef(({ onUpload }, ref) => {
     </div>
   );
 });
+EmptyStateFile.displayName = "EmptyStateFile";
 
 const FileGrid = forwardRef(({ items, onDeleteClick }, ref) => {
   return (
     <div className="flex flex-col gap-6 mt-4">
       <div className="flex flex-col flex-wrap gap-6">
         {items.map((item) => (
-          <FileItem
-            key={item.id}
-            id={item.id}
-            name={item.name}
-            onDeleteClick={onDeleteClick}
-          />
+          <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} />
         ))}
       </div>
     </div>
   );
 });
+FileGrid.displayName = "FileGrid";
 
-function FileItem({ id, name, onDeleteClick }) {
+function FileItem({ file, onDeleteClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuClick = (e) => {
@@ -218,7 +264,8 @@ function FileItem({ id, name, onDeleteClick }) {
     e.preventDefault();
     e.stopPropagation();
     setMenuOpen(false);
-    onDeleteClick(id);
+
+    onDeleteClick(file);
   };
 
   return (
@@ -230,9 +277,14 @@ function FileItem({ id, name, onDeleteClick }) {
         <FileText className="w-12 h-12 text-white fill-blue-600" />
       </div>
 
-      <span className="font-bold text-sm mt-1 text-black flex-1 truncate">
-        {name}
-      </span>
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="font-bold text-sm text-black truncate">
+          {file.original_name || file.name}
+        </span>
+        {file.original_name && (
+          <span className="text-xs text-gray-400 truncate">{file.name}</span>
+        )}
+      </div>
 
       <button
         onClick={handleMenuClick}
@@ -242,14 +294,14 @@ function FileItem({ id, name, onDeleteClick }) {
       </button>
 
       {menuOpen && (
-         <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
-            <button 
-              onClick={handleDeleteClick} 
-              className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2  border-black transition-all"
-            >
-              Delete
-            </button>
-          </div>
+        <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
+          <button
+            onClick={handleDeleteClick}
+            className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
+          >
+            Delete
+          </button>
+        </div>
       )}
     </div>
   );
