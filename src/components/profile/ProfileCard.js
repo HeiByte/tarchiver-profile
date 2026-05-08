@@ -1,22 +1,25 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfilePopup from "./ProfilePopup";
-
-
-const mockUser = {
-  name: "Budi Santoso",
-  email: "budi@email.com",
-};
+import { getUserProfile } from "@/components/auth/auth";
 
 export default function ProfileCard() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const containerRef = useRef(null);
+
+  const fetchUser = useCallback(() => {
+    getUserProfile().then(setUser);
+  }, []);
 
   const toggle = () => setIsOpen((prev) => !prev);
   const close = () => setIsOpen(false);
 
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -28,7 +31,6 @@ export default function ProfileCard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
- 
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") close();
@@ -39,13 +41,13 @@ export default function ProfileCard() {
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Profil Avatar (trigger) */}
-      <div className="flex items-center gap-3">
-        <ProfileAvatar onClick={toggle} isOpen={isOpen} />
-      </div>
-
-      {/* Popup */}
-      <ProfilePopup isOpen={isOpen} onClose={close} user={mockUser} />
+      <ProfileAvatar onClick={toggle} isOpen={isOpen} />
+      <ProfilePopup
+        isOpen={isOpen}
+        onClose={close}
+        user={user}
+        onProfileUpdated={fetchUser}
+      />
     </div>
   );
 }
