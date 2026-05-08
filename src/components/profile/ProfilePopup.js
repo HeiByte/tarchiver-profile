@@ -1,9 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import ProfileActions from "./ProfileActions";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ProfilePopup({ isOpen, onClose, user }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(user?.name || "");
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (user?.name) {
+      setNewName(user.name);
+    }
+  }, [user?.name]);
+
   if (!isOpen) return null;
+
+  const handleUpdateName = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: newName }
+      });
+
+      if (error) throw error;
+      
+      setIsEditing(false);
+      window.location.reload(); 
+    } catch (err) {
+      alert("Gagal memperbarui nama: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -39,17 +70,53 @@ export default function ProfilePopup({ isOpen, onClose, user }) {
 
         {/* Avatar */}
         <div className="flex justify-center -mt-10 mb-3">
-          <div className="w-20 h-20 bg-blue-400 rounded-full border-4 border-white shadow-lg" />
+          <div className="w-20 h-20 bg-blue-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold">
+            {newName.charAt(0)}
+          </div>
         </div>
 
         {/* Name & Info */}
         <div className="text-center px-6 pb-2">
-          <h2 className="text-lg font-bold text-gray-800 tracking-tight">
-            {user?.name ?? "Nama Pengguna"}
-          </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {user?.email ?? "user@email.com"}
-          </p>
+          {isEditing ? (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="w-full px-3 py-1 border rounded-md text-sm text-black"
+                autoFocus
+              />
+              <div className="flex justify-center gap-2">
+                <button 
+                  onClick={handleUpdateName}
+                  disabled={loading}
+                  className="text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                >
+                  {loading ? "..." : "Simpan"}
+                </button>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="text-xs bg-gray-200 px-2 py-1 rounded text-black"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-lg font-bold text-gray-800 tracking-tight flex items-center justify-center gap-2">
+                {user?.name ?? "Nama Pengguna"}
+                <button onClick={() => setIsEditing(true)} className="text-blue-500 hover:text-blue-700">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
+                  </svg>
+                </button>
+              </h2>
+              <p className="text-sm text-gray-400 mt-0.5">
+                @{user?.username ?? "username"}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Divider */}

@@ -44,21 +44,7 @@ export default function ProfileActions({ onClose }) {
   };
   return (
     <div className="flex flex-col gap-1 px-3">
-      {/* Edit Profil */}
-      <button
-        onClick={handleEditProfile}
-        className="
-          flex items-center gap-3 w-full px-4 py-2.5 rounded-xl
-          text-sm font-medium text-gray-700
-          hover:bg-blue-50 hover:text-blue-600
-          transition-colors duration-150 group
-        "
-      >
-        <span className="text-gray-400 group-hover:text-blue-500 transition-colors">
-          <PencilIcon />
-        </span>
-        Edit Profil
-      </button>
+
 
       {/* Setting */}
       <button
