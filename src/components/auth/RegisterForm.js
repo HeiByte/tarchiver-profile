@@ -19,7 +19,7 @@ export default function RegisterForm() {
     e.preventDefault();
     setErrorMsg("");
 
-    // Keamanan Dasar: Validasi Client-side
+    
     if (password !== confirmPassword) {
       setErrorMsg("Passwords do not match!");
       return;
@@ -33,7 +33,7 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      // Trick: Ubah username jadi email virtual agar privasi terjaga
+     
       const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -41,7 +41,7 @@ export default function RegisterForm() {
         password: password,
         options: {
           data: {
-            display_name: username, // Simpan username asli di metadata
+            display_name: username, 
           },
         },
       });
@@ -66,7 +66,7 @@ export default function RegisterForm() {
         Signup
       </h1>
 
-      {/* Tampilan Error (Jika ada) */}
+    
       {errorMsg && (
         <p className="text-red-500 text-xs text-center mb-4">{errorMsg}</p>
       )}

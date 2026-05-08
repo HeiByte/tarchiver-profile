@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { login } from "@/components/auth/auth";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -12,7 +12,6 @@ export default function LoginForm() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,28 +19,16 @@ export default function LoginForm() {
     setErrorMsg("");
 
     try {
-    
-      const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
+      const res = await login(username, password);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: virtualEmail,
-        password: password,
-      });
-
-      if (error) throw error;
-
-      if (data?.user) {
-   
+      if (res.success) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setErrorMsg(res.error);
       }
     } catch (err) {
-   
-      const message =
-        err.message === "Invalid login credentials"
-          ? "Username or password incorrect."
-          : err.message;
-      setErrorMsg(message);
+      setErrorMsg("Terjadi kesalahan saat login.");
     } finally {
       setLoading(false);
     }
