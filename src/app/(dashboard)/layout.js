@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import CreateFolder from "@/components/dashboard/CreateFolder";
 import { FolderProvider } from "@/context/FolderContext";
@@ -13,7 +13,9 @@ export default function DashboardLayout({ children }) {
         <Sidebar onCreateClick={() => setIsModalOpen(true)} />
 
         <main className="flex-1 bg-white relative">
-          {children}
+          <Suspense fallback={<div>Loading search...</div>}>
+            {children}
+          </Suspense>
         </main>
 
         <CreateFolder
