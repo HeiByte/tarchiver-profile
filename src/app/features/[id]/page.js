@@ -88,7 +88,7 @@ const Icon = data.icon;
             <span className="mr-2 p-3 transform group-hover:-translate-x-1 transition-transform">
               ←
             </span>
-            Back to Dashboard
+            Back to Home
           </a>
         </nav>
 

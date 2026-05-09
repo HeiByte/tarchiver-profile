@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MobileMenu from "../ui/MobileMenu";
@@ -10,17 +11,24 @@ const links = [
   { name: "Services", path: "/services" },
   { name: "Contact", path: "/contact" },
   { name: "Experiment", path: "/experiment" },
+  { name: "Login", path: "/login" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
 
- return (
+  return (
     <nav className="sticky top-0 z-50 bg-primary border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Nama Aplikasi / Logo */}
-        <div className="text-xl font-bold text-white">
-          Tarchiver
+        <div className="flex justify-center items-center text-xl font-bold text-white">
+          <Image
+            src="/Logo.png"
+            alt="Tarchiver Logo"
+            width={140}
+            height={140}
+            priority
+          />
         </div>
 
         {/* Desktop Menu: (768px) ke atas */}
@@ -32,15 +40,25 @@ export default function Navbar() {
                 key={link.path}
                 href={link.path}
                 className={`text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 
-                  ${isActive 
-                    ? "bg-amber-100 text-amber-700" 
-                    : "text-white hover:bg-slate-50 hover:text-amber-600"
+                  ${
+                    isActive
+                      ? "bg-amber-100 text-amber-700"
+                      : "text-white hover:bg-slate-50 hover:text-amber-600"
                   }`}
               >
                 {link.name}
               </Link>
             );
           })}
+
+          {/* BUTTON LOGIN
+          <Link
+            href="/login"
+            className="ml-4 px-5 py-2 rounded-full bg-secondary text-primary font-semibold hover:bg-yellow-400 transition-all"
+          >
+            Login
+          </Link> */}
+          
         </div>
 
         {/* Mobile Menu */}

@@ -60,7 +60,7 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-8 text-xl text-slate-600 font-light leading-relaxed">
               <p>
-                File management is often treated as a manual task—something users have to maintain constantly.
+                File management is often treated as a manual task something users have to maintain constantly.
               </p>
               <p className="text-primary font-bold italic border-l-4 border-secondary pl-6 py-2">
                 "We see it differently."
