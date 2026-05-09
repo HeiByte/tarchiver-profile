@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
 import { EllipsisVertical, FileText, Upload } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -15,6 +16,8 @@ export default function FolderContent({ folderId }) {
   const [fileToDelete, setFileToDelete] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") || "";
 
   const folder = folders.find((f) => f.id.toString() === folderId);
 
@@ -206,7 +209,14 @@ export default function FolderContent({ folderId }) {
         {folder.files.length === 0 ? (
           <EmptyStateFile onUpload={handleUploadClick} />
         ) : (
-          <FileGrid items={folder.files} onDeleteClick={setFileToDelete} />
+          <FileGrid
+            items={folder.files.filter((file) =>
+              (file.original_name || file.name)
+                .toLowerCase()
+                .includes(query.toLowerCase())
+            )}
+            onDeleteClick={setFileToDelete}
+          />
         )}
 
         <ConfirmModal
