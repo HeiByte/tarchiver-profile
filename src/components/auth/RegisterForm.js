@@ -4,6 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { z } from "zod";
+
+const registerSchema = z
+  .object({
+    username: z.string().min(1, "Username cannot be empty."),
+    password: z.string().min(6, "Password must be at least 6 characters."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match!",
+    path: ["confirmPassword"],
+  });
 
 export default function RegisterForm() {
   const [username, setUsername] = useState("");
@@ -19,14 +31,10 @@ export default function RegisterForm() {
     e.preventDefault();
     setErrorMsg("");
 
-    
-    if (password !== confirmPassword) {
-      setErrorMsg("Passwords do not match!");
-      return;
-    }
+    const result = registerSchema.safeParse({ username, password, confirmPassword });
 
-    if (password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters.");
+    if (!result.success) {
+      setErrorMsg(result.error.errors[0]?.message || "Invalid Input.");
       return;
     }
 

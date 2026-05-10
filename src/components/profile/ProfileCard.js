@@ -1,23 +1,26 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfilePopup from "./ProfilePopup";
-
-
-const mockUser = {
-  name: "Budi Santoso",
-  email: "budi@email.com",
-};
+import { getUserProfile } from "@/components/auth/auth";
 
 export default function ProfileCard() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const containerRef = useRef(null);
-
+ 
+  const fetchUser = useCallback(() => {
+    getUserProfile().then(setUser);
+  }, []);
+ 
   const toggle = () => setIsOpen((prev) => !prev);
   const close = () => setIsOpen(false);
-
-
+ 
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+ 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -27,7 +30,6 @@ export default function ProfileCard() {
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
-
  
   useEffect(() => {
     const handleEsc = (e) => {
@@ -36,16 +38,19 @@ export default function ProfileCard() {
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, []);
-
+ 
+  const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
+ 
   return (
     <div ref={containerRef} className="relative">
-      {/* Profil Avatar (trigger) */}
-      <div className="flex items-center gap-3">
-        <ProfileAvatar onClick={toggle} isOpen={isOpen} />
-      </div>
-
-      {/* Popup */}
-      <ProfilePopup isOpen={isOpen} onClose={close} user={mockUser} />
+      <ProfileAvatar onClick={toggle} isOpen={isOpen} initial={initial} />
+      <ProfilePopup
+        isOpen={isOpen}
+        onClose={close}
+        user={user}
+        onProfileUpdated={fetchUser}
+      />
     </div>
   );
 }
+ 

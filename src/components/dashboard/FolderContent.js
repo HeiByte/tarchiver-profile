@@ -7,8 +7,14 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { forwardRef } from "react";
 import ConfirmModal from "./ConfirmModal";
+import { z } from "zod";
 
 const supabase = createClient();
+
+const uploadSchema = z.object({
+  fileSize: z.number().max(50 * 1024 * 1024, "File size exceeds 50MB limit."),
+  fileName: z.string().min(1, "File name cannot be empty."),
+});
 
 export default function FolderContent({ folderId }) {
   const { folders, setFolders, showToast } = useFolders();
@@ -53,6 +59,19 @@ export default function FolderContent({ folderId }) {
   const handleFileChange = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+
+      // Zod validation: size and name
+      const zodResult = uploadSchema.safeParse({
+        fileSize: file.size,
+        fileName: file.name,
+      });
+
+      if (!zodResult.success) {
+        const firstError = zodResult.error.errors[0]?.message || "Invalid file.";
+        showToast(firstError, "error");
+        e.target.value = "";
+        return;
+      }
 
       let isValid = true;
       if (
@@ -149,7 +168,7 @@ export default function FolderContent({ folderId }) {
 
   const handleDeleteConfirm = async () => {
     if (!fileToDelete || !fileToDelete.id) {
-      showToast("Gagal: ID File tidak valid", "error");
+      showToast("Failed: Invalid File ID", "error");
       return;
     }
 

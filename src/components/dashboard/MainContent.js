@@ -49,7 +49,7 @@ export default function MainContent() {
 
         setFolders(foldersWithFiles);
       } catch (error) {
-        showToast("Gagal memuat folder: " + error.message, "error");
+        showToast("Failed to load folder: " + error.message, "error");
       } finally {
         setLoading(false);
       }
@@ -60,7 +60,7 @@ export default function MainContent() {
 
   const handleSave = async (name, type) => {
     if (name.trim() === "") {
-      showToast("Nama required!", "error");
+      showToast("Name required!", "error");
       return;
     }
 
@@ -68,7 +68,7 @@ export default function MainContent() {
       (f) => f.name.toLowerCase() === name.trim().toLowerCase()
     );
     if (isDuplicate) {
-      showToast("Nama already taken.", "error");
+      showToast("Name already taken.", "error");
       return;
     }
 

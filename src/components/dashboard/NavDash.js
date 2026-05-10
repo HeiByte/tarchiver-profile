@@ -2,12 +2,14 @@
 
 import { Search } from "lucide-react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import ProfileCard from "../profile/ProfileCard";
+
 
 export default function NavDash() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
-
+ 
   const handleSearch = (term) => {
     const params = new URLSearchParams(searchParams);
     if (term) {
@@ -17,17 +19,14 @@ export default function NavDash() {
     }
     replace(`${pathname}?${params.toString()}`);
   };
-
+ 
   return (
-    <div className="flex justify-between items-center mb-8 shadow-md bg-white p-6 sticky">
+    <div className="flex justify-between items-center mb-8 shadow-md bg-white p-6 sticky z-[9999]">
       {/* Search Bar */}
       <div className="relative w-1/2">
-        {/* Ikon Search */}
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search size={18} className="text-black" />
         </div>
-
-        {/* Input Field */}
         <input
           type="text"
           placeholder="Search files..."
@@ -36,9 +35,10 @@ export default function NavDash() {
           defaultValue={searchParams.get("query")?.toString()}
         />
       </div>
-      {/* Profil */}
+ 
+      {/* Profile */}
       <div className="flex items-center gap-3">
-        <div className="w-16 h-16 bg-blue-400 rounded-full border-2 border-white shadow-sm"></div>
+        <ProfileCard />
       </div>
     </div>
   );
