@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import CreateFolder from "./CreateFolder";
 import { useFolders } from "@/context/FolderContext";
@@ -12,6 +13,8 @@ export default function MainContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") || "";
 
   const supabase = createClient();
 
@@ -25,11 +28,17 @@ export default function MainContent() {
 
         if (!user) return;
 
-        const { data, error } = await supabase
+        let supabaseQuery = supabase
           .from("folders")
           .select("*, files(*)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true });
+
+        if (query) {
+          supabaseQuery = supabaseQuery.ilike("name", `%${query}%`);
+        }
+
+        const { data, error } = await supabaseQuery;
 
         if (error) throw error;
 
@@ -47,7 +56,7 @@ export default function MainContent() {
     };
 
     fetchFolders();
-  }, []);
+  }, [query]);
 
   const handleSave = async (name, type) => {
     if (name.trim() === "") {
