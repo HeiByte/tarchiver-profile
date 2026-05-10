@@ -5,7 +5,7 @@ import ProfileActions from "./ProfileActions";
 import ProfileEdit from "./ProfileEdit";
 
 export default function ProfilePopup({ isOpen, onClose, user, onProfileUpdated }) {
-  const [view, setView] = useState("main"); // "main" | "profile"
+  const [view, setView] = useState("main"); 
 
   useEffect(() => {
     if (!isOpen) setView("main");
@@ -17,7 +17,6 @@ export default function ProfilePopup({ isOpen, onClose, user, onProfileUpdated }
 
   return (
     <>
-      {/* Click-outside backdrop — hanya aktif saat view main */}
       {view === "main" && (
         <div
           className="fixed inset-0 z-40"

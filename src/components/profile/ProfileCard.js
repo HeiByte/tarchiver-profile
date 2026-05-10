@@ -9,18 +9,18 @@ export default function ProfileCard() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const containerRef = useRef(null);
-
+ 
   const fetchUser = useCallback(() => {
     getUserProfile().then(setUser);
   }, []);
-
+ 
   const toggle = () => setIsOpen((prev) => !prev);
   const close = () => setIsOpen(false);
-
+ 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
-
+ 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -30,7 +30,7 @@ export default function ProfileCard() {
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
-
+ 
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") close();
@@ -38,10 +38,13 @@ export default function ProfileCard() {
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, []);
-
+ 
+  // Ambil inisial dari nama atau username dari Supabase
+  const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
+ 
   return (
     <div ref={containerRef} className="relative">
-      <ProfileAvatar onClick={toggle} isOpen={isOpen} />
+      <ProfileAvatar onClick={toggle} isOpen={isOpen} initial={initial} />
       <ProfilePopup
         isOpen={isOpen}
         onClose={close}
@@ -51,3 +54,4 @@ export default function ProfileCard() {
     </div>
   );
 }
+ 

@@ -1,6 +1,6 @@
 "use client";
 
-export default function ProfileAvatar({ onClick, isOpen }) {
+export default function ProfileAvatar({ onClick, isOpen, initial = "U" }) {
   return (
     <button
       onClick={onClick}
@@ -17,7 +17,7 @@ export default function ProfileAvatar({ onClick, isOpen }) {
       aria-label="Buka profil"
     >
       <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-semibold select-none">
-        U
+        {initial}
       </span>
     </button>
   );
