@@ -38,7 +38,7 @@ export default function ProfilePopup({ isOpen, onClose, user, onProfileUpdated }
         >
           {/* Avatar + Name */}
           <div className="flex flex-col items-center pt-6 pb-4 px-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-500
               flex items-center justify-center text-white text-2xl font-bold shadow-sm mb-3">
               {initials}
             </div>
@@ -61,7 +61,6 @@ export default function ProfilePopup({ isOpen, onClose, user, onProfileUpdated }
         </div>
       )}
 
-      {/* Full screen profile edit — render di luar popup */}
       {view === "profile" && (
         <ProfileEdit
           user={user}

@@ -13,14 +13,14 @@ export default function ProfileActions({ onClose, onEditProfile }) {
       onClose();
       router.push("/");
     } catch (err) {
-      console.error("Logout gagal:", err);
+      console.error("Logout Failed:", err);
     }
   };
 
   const menuItems = [
     { label: "Profile", icon: <User size={20} />, onClick: onEditProfile, active: true },
     { label: "Setting", icon: <Settings size={20} />, onClick: null, active: false },
-    { label: "Hapus Akun", icon: <Trash2 size={20} />, onClick: null, active: false },
+    { label: "Delete Akun", icon: <Trash2 size={20} />, onClick: null, active: false },
   ];
 
   return (

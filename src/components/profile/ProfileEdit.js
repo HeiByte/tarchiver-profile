@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { updateProfile } from "@/components/auth/auth";
-import { ChevronLeft, Check } from "lucide-react";
+import {
+  ChevronLeft,
+  Check,
+  User,
+  MapPin,
+  Mail,
+  Briefcase,
+} from "lucide-react";
 
 export default function ProfileEdit({ user, onBack, onSaved }) {
   const [form, setForm] = useState({
@@ -25,90 +32,113 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
       await updateProfile(form);
       onSaved();
     } catch (err) {
-      setError("Gagal menyimpan: " + err.message);
+      setError("Save Failed: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const fields = [
-    { label: "Username", name: "username", value: user?.username || "", disabled: true },
-    { label: "Nama", name: "name", value: form.name, disabled: false },
-    { label: "Alamat", name: "address", value: form.address, disabled: false },
-    { label: "Email", name: "email", value: form.email, disabled: false },
-    { label: "Pekerjaan", name: "job", value: form.job, disabled: false },
+    {
+      label: "Name",
+      name: "name",
+      value: form.name,
+      disabled: false,
+      icon: <User size={20} />,
+    },
+    {
+      label: "Email",
+      name: "email",
+      value: form.email,
+      disabled: false,
+      icon: <Mail size={20} />,
+    },
+    {
+      label: "Address",
+      name: "address",
+      value: form.address,
+      disabled: false,
+      icon: <MapPin size={20} />,
+    },
+    {
+      label: "Job",
+      name: "job",
+      value: form.job,
+      disabled: false,
+      icon: <Briefcase size={20} />,
+    },
   ];
 
+  const displayName = (user?.name || user?.username || "User").toUpperCase();
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-white flex flex-col">
-
-      {/* Header */}
-      <div className="flex items-center px-6 py-4 border-b border-gray-100">
-        <h1 className="text-base font-semibold text-gray-800 mx-auto">Profil</h1>
-      </div>
-
-      {/* Avatar */}
-      <div className="flex flex-col items-center pt-8 pb-6">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500
-          flex items-center justify-center text-white text-3xl font-bold shadow-md mb-3">
-          {(user?.name || user?.username || "U").charAt(0).toUpperCase()}
+    <div className="fixed inset-0 z-[9999] bg-[#FBFCFD] flex flex-col items-center justify-center p-6">
+      {/* Card */}
+      <div className="w-full max-w-2xl bg-[#F8FAFC] rounded-3xl shadow-2xl px-12 py-10 flex flex-col items-center gap-6">
+        {/* Avatar */}
+        <div className="relative">
+          <div
+            className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-500
+            flex items-center justify-center text-white text-3xl shadow-md
+            border-4 border-blue-400 overflow-hidden"
+          >
+            {(user?.name || user?.username || "U").charAt(0).toUpperCase()}
+          </div>
         </div>
-        <p className="text-sm text-gray-400">@{user?.username}</p>
-      </div>
 
-      {/* Fields */}
-      <div className="flex-1 overflow-y-auto px-6">
-        <div className="max-w-md mx-auto flex flex-col gap-0 border border-gray-100 rounded-2xl overflow-hidden bg-gray-50">
-          {fields.map((field, i) => (
-            <div
-              key={field.name}
-              className={`flex items-center gap-4 px-4 py-3.5
-                ${i !== fields.length - 1 ? "border-b border-gray-100" : ""}`}
-            >
-              <span className="text-xs text-gray-400 w-20 flex-shrink-0">
-                {field.label}
-              </span>
-              {field.disabled ? (
-                <span className="text-sm text-gray-500 flex-1 truncate">
-                  {field.value || <span className="text-gray-300 italic">—</span>}
+        {/* Username */}
+        <h1 className="text-2xl font-semibold tracking-widest text-gray-800 -mt-2">
+          {displayName}
+        </h1>
+
+        {/* Fields */}
+        <div className="w-full flex flex-col gap-5 mt-2">
+          {fields.map((field) => (
+            <div key={field.name} className="flex flex-col gap-1">
+              <span className="text-xs text-black ml-10">{field.label}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-black flex-shrink-0">
+                  {field.icon}
                 </span>
-              ) : (
                 <input
                   type="text"
                   name={field.name}
                   value={field.value}
                   onChange={handleChange}
-                  placeholder="Belum diisi"
-                  className="flex-1 text-sm text-gray-800 bg-transparent border-0
-                    focus:outline-none placeholder:text-gray-300 min-w-0"
+                  disabled={field.disabled}
+                  placeholder="Not Set"
+                  className="flex-1 text-sm text-gray-700 bg-transparent border-0 border-b border-gray-300
+                    focus:outline-none focus:border-blue-400 pb-1
+                    placeholder:text-gray-300 disabled:text-gray-400 transition-colors"
                 />
-              )}
+              </div>
             </div>
           ))}
         </div>
 
-        {error && (
-          <p className="text-xs text-red-500 mt-3 text-center max-w-md mx-auto">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-500 text-center">{error}</p>}
       </div>
 
-      {/* Footer: Back kiri, Simpan kanan */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+      {/* Footer */}
+      <div className="w-full flex items-center justify-between mt-6 p-5 absolute bottom-0">
+        {/* Back */}
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600
-            transition-colors duration-150"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl
+            text-sm font-medium text-blue-500 border border-blue-300
+            hover:bg-blue-50 transition-colors duration-150"
         >
           <ChevronLeft size={16} />
           Back
         </button>
 
+        {/* Save */}
         <button
           onClick={handleSave}
           disabled={loading}
-          className="flex items-center gap-2 px-5 py-2 rounded-lg
+          className="flex items-center gap-2 px-5 py-2 rounded-xl
             text-sm font-medium text-white
-            bg-indigo-500 hover:bg-indigo-600
+            bg-blue-500 hover:bg-blue-600
             disabled:opacity-50 transition-colors duration-150"
         >
           {loading ? (
@@ -116,7 +146,7 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
           ) : (
             <Check size={14} />
           )}
-          Simpan
+          Save
         </button>
       </div>
     </div>

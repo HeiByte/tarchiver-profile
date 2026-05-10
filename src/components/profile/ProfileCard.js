@@ -39,7 +39,6 @@ export default function ProfileCard() {
     return () => document.removeEventListener("keydown", handleEsc);
   }, []);
  
-  // Ambil inisial dari nama atau username dari Supabase
   const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
  
   return (

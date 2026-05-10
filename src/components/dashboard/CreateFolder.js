@@ -15,7 +15,7 @@ export default function CreateFolder({ isOpen, onClose }) {
 
   const handleSubmit = async () => {
     if (folderName.trim() === "") {
-      return alert("Nama tidak boleh kosong!");
+      return alert("Name is required!");
     }
 
     setLoading(true);
@@ -54,7 +54,7 @@ export default function CreateFolder({ isOpen, onClose }) {
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
-      alert("Gagal menyimpan ke database: " + error.message);
+      alert("Error saving to database: " + error.message);
     } finally {
       setLoading(false);
     }
