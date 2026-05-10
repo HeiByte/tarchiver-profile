@@ -2,6 +2,16 @@
 import { useState } from "react";
 import { useFolders } from "@/context/FolderContext";
 import { createClient } from "@/utils/supabase/client";
+import { z } from "zod";
+
+const folderSchema = z.object({
+  folderName: z
+    .string()
+    .min(1, "Name is required!")
+    .max(50, "Folder name must be 50 characters or less.")
+    .regex(/^[a-zA-Z0-9 _-]+$/, "Folder name contains invalid characters."),
+  folderType: z.enum(["all", "doc", "media", "image"]),
+});
 
 export default function CreateFolder({ isOpen, onClose }) {
   const { setFolders } = useFolders();
@@ -14,8 +24,11 @@ export default function CreateFolder({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (folderName.trim() === "") {
-      return alert("Name is required!");
+    const result = folderSchema.safeParse({ folderName, folderType });
+
+    if (!result.success) {
+      const firstError = result.error.errors[0]?.message || "Invalid input.";
+      return alert(firstError);
     }
 
     setLoading(true);
@@ -32,8 +45,8 @@ export default function CreateFolder({ isOpen, onClose }) {
         .from("folders")
         .insert([
           {
-            name: folderName.trim(),
-            type: folderType,      
+            name: result.data.folderName.trim(),
+            type: result.data.folderType,      
             user_id: user.id,      
           },
         ])

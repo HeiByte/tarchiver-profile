@@ -2,8 +2,28 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username cannot be empty"),
+  password: z.string().min(1, "Password cannot be empty."),
+});
+
+const updateProfileSchema = z.object({
+  name: z.string().max(100, "Max 100 characters.").optional(),
+  address: z.string().max(255, "Max 255 characters.").optional(),
+  email: z.union([z.literal(""), z.string().email("Invalid email format.")]).optional(),
+  job: z.string().max(100, "Max 100 characters.").optional(),
+});
 
 export async function login(username, password) {
+  const result = loginSchema.safeParse({ username, password });
+
+  if (!result.success) {
+    const firstError = result.error.errors[0]?.message || "Invalid Input.";
+    return { success: false, error: firstError };
+  }
+
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -15,7 +35,7 @@ export async function login(username, password) {
   });
 
   if (error) {
-    return { success: false, error: "Username atau password salah." };
+    return { success: false, error: "Incorrect Username or password." };
   }
 
   cookieStore.set("auth_session", "active", {
@@ -58,11 +78,18 @@ export async function getUserProfile() {
 }
 
 export async function updateProfile(fields) {
+  const result = updateProfileSchema.safeParse(fields);
+
+  if (!result.success) {
+    const firstError = result.error.errors[0]?.message || "Invalid Input.";
+    throw new Error(firstError);
+  }
+
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("User tidak ditemukan");
+  if (!user) throw new Error("User not found");
 
   const { error } = await supabase
     .from("profiles")
