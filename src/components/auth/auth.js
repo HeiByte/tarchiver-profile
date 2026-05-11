@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username cannot be empty"),
+  email: z.string().email("Invalid email format."),
   password: z.string().min(1, "Password cannot be empty."),
 });
 
@@ -16,8 +16,8 @@ const updateProfileSchema = z.object({
   job: z.string().max(100, "Max 100 characters.").optional(),
 });
 
-export async function login(username, password) {
-  const result = loginSchema.safeParse({ username, password });
+export async function login(email, password) {
+  const result = loginSchema.safeParse({ email, password });
 
   if (!result.success) {
     const firstError = result.error.errors[0]?.message || "Invalid Input.";
@@ -27,15 +27,13 @@ export async function login(username, password) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
-
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: virtualEmail,
+    email: email.toLowerCase().trim(),
     password: password,
   });
 
   if (error) {
-    return { success: false, error: "Incorrect Username or password." };
+    return { success: false, error: "Incorrect email or password." };
   }
 
   cookieStore.set("auth_session", "active", {
@@ -69,10 +67,10 @@ export async function getUserProfile() {
 
   return {
     id: user.id,
-    username: user.email.split("@")[0],
+    username: user.user_metadata?.display_name || user.email.split("@")[0],
     name: profile?.full_name || "",
     address: profile?.address || "",
-    email: profile?.email || "",
+    email: profile?.email || user.email || "",
     job: profile?.job || "",
   };
 }

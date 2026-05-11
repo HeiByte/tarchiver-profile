@@ -47,8 +47,8 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
       icon: <User size={20} />,
     },
     {
-      label: "Email",
-      name: "email",
+      label: "Contact",
+      name: "contact",
       value: form.email,
       disabled: false,
       icon: <Mail size={20} />,
