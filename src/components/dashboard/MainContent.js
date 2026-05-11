@@ -17,7 +17,7 @@ export default function MainContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  // ─── useOptimistic: langsung hapus folder dari UI, rollback jika gagal ───
+  // ─── useOptimistic ───
   const [optimisticFolders, setOptimisticFolders] = useOptimistic(
     folders,
     (currentFolders, deletedId) =>
@@ -108,10 +108,10 @@ export default function MainContent() {
     if (!folderToDelete) return;
 
     const idToDelete = folderToDelete;
-    setFolderToDelete(null); // tutup modal segera
+    setFolderToDelete(null);
 
     startTransition(async () => {
-      // 1️⃣ Optimistic: folder langsung hilang dari UI
+      
       setOptimisticFolders(idToDelete);
 
       try {
@@ -147,11 +147,11 @@ export default function MainContent() {
 
         if (error) throw error;
 
-        // 2️⃣ Commit: sinkronkan state nyata dengan hasil server
+       
         setFolders((prev) => prev.filter((f) => f.id !== idToDelete));
         showToast("Folder deleted!", "success");
       } catch (error) {
-        // 3️⃣ Rollback otomatis — useOptimistic mengembalikan state asal
+      
         showToast("Delete failed: " + error.message, "error");
       }
     });

@@ -177,7 +177,7 @@ export default function FolderContent({ folderId }) {
     }
 
     const targetFile = fileToDelete;
-    setFileToDelete(null); // tutup modal segera
+    setFileToDelete(null); 
 
     startTransition(async () => {
       setOptimisticFiles(targetFile.id);
@@ -261,7 +261,7 @@ export default function FolderContent({ folderId }) {
   );
 }
 
-// ─── Skeleton saat upload sedang berlangsung ─────
+// ─── Skeleton saat upload sedang berlangsung ───
 function UploadingSkeleton() {
   return (
     <div className="flex flex-col gap-6 mt-4">
