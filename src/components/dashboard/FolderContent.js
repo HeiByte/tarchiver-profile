@@ -67,7 +67,8 @@ export default function FolderContent({ folderId }) {
       });
 
       if (!zodResult.success) {
-        const firstError = zodResult.error.errors[0]?.message || "Invalid file.";
+        const firstError =
+          zodResult.error.errors[0]?.message || "Invalid file.";
         showToast(firstError, "error");
         e.target.value = "";
         return;
@@ -232,7 +233,7 @@ export default function FolderContent({ folderId }) {
             items={folder.files.filter((file) =>
               (file.original_name || file.name)
                 .toLowerCase()
-                .includes(query.toLowerCase())
+                .includes(query.toLowerCase()),
             )}
             onDeleteClick={setFileToDelete}
           />
@@ -308,11 +309,8 @@ function FileItem({ file, onDeleteClick }) {
 
       <div className="flex flex-col flex-1 min-w-0">
         <span className="font-bold text-sm text-black truncate">
-          {file.original_name || file.name}
+          {file.name}
         </span>
-        {file.original_name && (
-          <span className="text-xs text-gray-400 truncate">{file.name}</span>
-        )}
       </div>
 
       <button
