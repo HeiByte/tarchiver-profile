@@ -30,7 +30,7 @@ export default function MainContent() {
 
         let supabaseQuery = supabase
           .from("folders")
-          .select("*, files(*)")
+          .select("*, files!files_folder_id_fkey(*)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true });
 
