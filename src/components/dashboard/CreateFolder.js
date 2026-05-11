@@ -2,6 +2,16 @@
 import { useState } from "react";
 import { useFolders } from "@/context/FolderContext";
 import { createClient } from "@/utils/supabase/client";
+import { z } from "zod";
+
+const folderSchema = z.object({
+  folderName: z
+    .string()
+    .min(1, "Name is required!")
+    .max(50, "Folder name must be 50 characters or less.")
+    .regex(/^[a-zA-Z0-9 _-]+$/, "Folder name contains invalid characters."),
+  folderType: z.enum(["all", "doc", "media", "image"]),
+});
 
 export default function CreateFolder({ isOpen, onClose }) {
   const { setFolders } = useFolders();
@@ -10,12 +20,18 @@ export default function CreateFolder({ isOpen, onClose }) {
   const [folderName, setFolderName] = useState("");
   const [folderType, setFolderType] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (folderName.trim() === "") {
-      return alert("Nama tidak boleh kosong!");
+    setErrors({});
+
+    const result = folderSchema.safeParse({ folderName, folderType });
+
+    if (!result.success) {
+      setErrors(result.error.flatten().fieldErrors);
+      return;
     }
 
     setLoading(true);
@@ -32,8 +48,8 @@ export default function CreateFolder({ isOpen, onClose }) {
         .from("folders")
         .insert([
           {
-            name: folderName.trim(),
-            type: folderType,      
+            name: result.data.folderName.trim(),
+            type: result.data.folderType,      
             user_id: user.id,      
           },
         ])
@@ -51,17 +67,18 @@ export default function CreateFolder({ isOpen, onClose }) {
 
       setFolderName("");
       setFolderType("all");
+      setErrors({});
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
-      alert("Gagal menyimpan ke database: " + error.message);
+      setErrors({ general: [error.message] });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-6">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-6 z-[10000]">
       <div className="bg-white rounded p-6 w-full max-w-2xl shadow-xl">
         <h2 className="font-bold text-xl mb-4 text-black">Create Folder</h2>
 
@@ -69,11 +86,19 @@ export default function CreateFolder({ isOpen, onClose }) {
           type="text"
           placeholder="Folder Name..."
           disabled={loading}
-          className="w-full p-4 border-2 rounded-md border-blue-600 mb-4 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+          className={`w-full p-4 border-2 rounded-md mb-1 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 ${errors.folderName ? "border-red-500" : "border-blue-600"}`}
           value={folderName}
-          onChange={(e) => setFolderName(e.target.value)}
+          onChange={(e) => {
+            setFolderName(e.target.value);
+            if (errors.folderName) setErrors((prev) => ({ ...prev, folderName: undefined }));
+          }}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         />
+        {errors.folderName ? (
+          <p className="text-red-500 text-xs mb-3">{errors.folderName[0]}</p>
+        ) : (
+          <div className="mb-4" />
+        )}
 
         <p className="mb-2 text-[#041C41] font-medium">Select Category</p>
 
@@ -98,6 +123,10 @@ export default function CreateFolder({ isOpen, onClose }) {
             </label>
           ))}
         </div>
+
+        {errors.general && (
+          <p className="text-red-500 text-xs mb-2">{errors.general[0]}</p>
+        )}
 
         <div className="flex justify-end gap-3 mt-6">
           <button

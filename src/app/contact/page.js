@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Image from 'next/image';
 import gambar6 from '@/assets/gambar6.jpg';
@@ -55,7 +54,6 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-
 
           <div className="bg-slate-50 p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm relative">
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-secondary rounded-full flex items-center justify-center text-primary font-black text-2xl rotate-12 shadow-lg">

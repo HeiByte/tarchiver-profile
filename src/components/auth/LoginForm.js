@@ -3,16 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { login } from "@/components/auth/auth";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,28 +19,16 @@ export default function LoginForm() {
     setErrorMsg("");
 
     try {
-    
-      const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
+      const res = await login(email, password);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: virtualEmail,
-        password: password,
-      });
-
-      if (error) throw error;
-
-      if (data?.user) {
-   
+      if (res.success) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setErrorMsg(res.error);
       }
     } catch (err) {
-   
-      const message =
-        err.message === "Invalid login credentials"
-          ? "Username or password incorrect."
-          : err.message;
-      setErrorMsg(message);
+      setErrorMsg("Terjadi kesalahan saat login.");
     } finally {
       setLoading(false);
     }
@@ -61,13 +48,13 @@ export default function LoginForm() {
         <p className="text-red-500 text-xs mb-4 text-center">{errorMsg}</p>
       )}
 
-    
+      {/* EMAIL */}
       <input
-        type="text"
-        placeholder="Username"
+        type="email"
+        placeholder="Email"
         required
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className="w-full mb-4 px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
       />
 
@@ -82,8 +69,6 @@ export default function LoginForm() {
           className="w-full px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
         />
       </div>
-
-  
 
       {/* FORGOT */}
       <div className="text-right mb-6">

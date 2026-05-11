@@ -1,17 +1,30 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useOptimistic, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import CreateFolder from "./CreateFolder";
 import { useFolders } from "@/context/FolderContext";
 import { EllipsisVertical, Folder } from "lucide-react";
 import Link from "next/link";
 import ConfirmModal from "./ConfirmModal";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MainContent() {
   const { folders, setFolders, showToast } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") || "";
+
+  // ─── useOptimistic ───
+  const [optimisticFolders, setOptimisticFolders] = useOptimistic(
+    folders,
+    (currentFolders, deletedId) =>
+      currentFolders.filter((f) => f.id !== deletedId),
+  );
+
+  const [isPending, startTransition] = useTransition();
 
   const supabase = createClient();
 
@@ -25,12 +38,17 @@ export default function MainContent() {
 
         if (!user) return;
 
-        const { data, error } = await supabase
+        let supabaseQuery = supabase
           .from("folders")
-          .select("*, files(*)")
+          .select("*, files!files_folder_id_fkey(*)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true });
 
+        if (query) {
+          supabaseQuery = supabaseQuery.ilike("name", `%${query}%`);
+        }
+
+        const { data, error } = await supabaseQuery;
         if (error) throw error;
 
         const foldersWithFiles = (data || []).map((f) => ({
@@ -40,26 +58,26 @@ export default function MainContent() {
 
         setFolders(foldersWithFiles);
       } catch (error) {
-        showToast("Gagal memuat folder: " + error.message, "error");
+        showToast("Failed to load folder: " + error.message, "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchFolders();
-  }, []);
+  }, [query]);
 
   const handleSave = async (name, type) => {
     if (name.trim() === "") {
-      showToast("Nama required!", "error");
+      showToast("Name required!", "error");
       return;
     }
 
     const isDuplicate = folders.some(
-      (f) => f.name.toLowerCase() === name.trim().toLowerCase()
+      (f) => f.name.toLowerCase() === name.trim().toLowerCase(),
     );
     if (isDuplicate) {
-      showToast("Nama already taken.", "error");
+      showToast("Name already taken.", "error");
       return;
     }
 
@@ -71,13 +89,7 @@ export default function MainContent() {
 
       const { data, error } = await supabase
         .from("folders")
-        .insert([
-          {
-            name: name.trim(),
-            type: type,        
-            user_id: user.id, 
-          },
-        ])
+        .insert([{ name: name.trim(), type, user_id: user.id }])
         .select()
         .single();
 
@@ -91,70 +103,73 @@ export default function MainContent() {
     }
   };
 
- 
-  const handleDeleteConfirm = async () => {
+  // ─── Hapus folder dengan Optimistic UI ───────────────────────────────────
+  const handleDeleteConfirm = () => {
     if (!folderToDelete) return;
 
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+    const idToDelete = folderToDelete;
+    setFolderToDelete(null);
 
-   
-      const targetFolder = folders.find((f) => f.id === folderToDelete);
+    startTransition(async () => {
+      
+      setOptimisticFolders(idToDelete);
 
-      if (targetFolder?.files?.length > 0) {
-        const storagePaths = targetFolder.files
-          .map((f) => f.storage_path)
-          .filter(Boolean);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("User not authenticated");
 
-        if (storagePaths.length > 0) {
-          const { error: storageError } = await supabase.storage
-            .from("tarchive-bucket")
-            .remove(storagePaths);
+        const targetFolder = folders.find((f) => f.id === idToDelete);
 
-          
-          if (storageError) {
-            console.warn("Storage delete warning:", storageError.message);
+        // Hapus files dari storage jika ada
+        if (targetFolder?.files?.length > 0) {
+          const storagePaths = targetFolder.files
+            .map((f) => f.storage_path)
+            .filter(Boolean);
+
+          if (storagePaths.length > 0) {
+            const { error: storageError } = await supabase.storage
+              .from("tarchive-bucket")
+              .remove(storagePaths);
+
+            if (storageError) {
+              console.warn("Storage delete warning:", storageError.message);
+            }
           }
         }
+
+        // Hapus folder dari database
+        const { error } = await supabase
+          .from("folders")
+          .delete()
+          .eq("id", idToDelete);
+
+        if (error) throw error;
+
+       
+        setFolders((prev) => prev.filter((f) => f.id !== idToDelete));
+        showToast("Folder deleted!", "success");
+      } catch (error) {
+      
+        showToast("Delete failed: " + error.message, "error");
       }
-
-    
-      const { error } = await supabase
-        .from("folders")
-        .delete()
-        .eq("id", folderToDelete);
-
-      if (error) throw error;
-
-      setFolders((prev) => prev.filter((f) => f.id !== folderToDelete));
-      setFolderToDelete(null);
-      showToast("Folder deleted!", "success");
-    } catch (error) {
-      showToast(error.message, "error");
-    }
+    });
   };
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
       <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden relative">
-
-        {/* Loading state */}
+        {/* ─── Skeleton Loading awal ──────── */}
         {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="flex flex-col items-center gap-3">
-              <span className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
-              <p className="text-gray-500 text-sm">Loading folders...</p>
-            </div>
-          </div>
-        ) : folders.length === 0 ? (
+          <FolderGridSkeleton />
+        ) : optimisticFolders.length === 0 ? (
           <EmptyState onAdd={() => setIsModalOpen(true)} />
         ) : (
-          
-            <FolderGrid items={folders} onDeleteClick={setFolderToDelete} />
-   
+          <FolderGrid
+            items={optimisticFolders}
+            onDeleteClick={setFolderToDelete}
+          />
         )}
 
         <CreateFolder
@@ -171,6 +186,21 @@ export default function MainContent() {
           message="Delete this folder and all its contents?"
         />
       </div>
+    </div>
+  );
+}
+
+
+function FolderGridSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 max-w-sm p-2">
+          <Skeleton className="w-10 h-10 rounded-md flex-shrink-0" />
+          <Skeleton className="h-4 flex-1 rounded-md" />
+          <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -226,18 +256,15 @@ function FolderItem({ id, name, onDeleteClick }) {
         onMouseLeave={() => setMenuOpen(false)}
       >
         <Folder className="w-10 h-10 fill-black" />
-
         <span className="font-bold text-sm mt-1 text-black flex-1 truncate">
           {name}
         </span>
-
         <button
           onClick={handleMenuClick}
           className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
         >
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
-
         {menuOpen && (
           <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
             <button
