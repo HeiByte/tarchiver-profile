@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { login } from "@/components/auth/auth";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -19,7 +19,7 @@ export default function LoginForm() {
     setErrorMsg("");
 
     try {
-      const res = await login(username, password);
+      const res = await login(email, password);
 
       if (res.success) {
         router.push("/dashboard");
@@ -48,13 +48,13 @@ export default function LoginForm() {
         <p className="text-red-500 text-xs mb-4 text-center">{errorMsg}</p>
       )}
 
-    
+      {/* EMAIL */}
       <input
-        type="text"
-        placeholder="Username"
+        type="email"
+        placeholder="Email"
         required
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className="w-full mb-4 px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
       />
 
@@ -69,8 +69,6 @@ export default function LoginForm() {
           className="w-full px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
         />
       </div>
-
-  
 
       {/* FORGOT */}
       <div className="text-right mb-6">

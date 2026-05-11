@@ -9,6 +9,7 @@ import { z } from "zod";
 const registerSchema = z
   .object({
     username: z.string().min(1, "Username cannot be empty."),
+    email: z.string().email("Invalid email format."),
     password: z.string().min(6, "Password must be at least 6 characters."),
     confirmPassword: z.string().min(1, "Please confirm your password."),
   })
@@ -19,6 +20,7 @@ const registerSchema = z
 
 export default function RegisterForm() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function RegisterForm() {
     e.preventDefault();
     setErrorMsg("");
 
-    const result = registerSchema.safeParse({ username, password, confirmPassword });
+    const result = registerSchema.safeParse({ username, email, password, confirmPassword });
 
     if (!result.success) {
       setErrorMsg(result.error.errors[0]?.message || "Invalid Input.");
@@ -41,15 +43,12 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-     
-      const virtualEmail = `${username.toLowerCase().trim()}@tarchive.local`;
-
       const { data, error } = await supabase.auth.signUp({
-        email: virtualEmail,
+        email: email.toLowerCase().trim(),
         password: password,
         options: {
           data: {
-            display_name: username, 
+            display_name: username,
           },
         },
       });
@@ -61,7 +60,7 @@ export default function RegisterForm() {
         router.refresh();
       }
     } catch (err) {
-      setErrorMsg(err.message || "An error occurred during signup");
+      setErrorMsg(err.message || "An error occurred during signup.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +73,7 @@ export default function RegisterForm() {
         Signup
       </h1>
 
-    
+      {/* ERROR MESSAGE */}
       {errorMsg && (
         <p className="text-red-500 text-xs text-center mb-4">{errorMsg}</p>
       )}
@@ -86,6 +85,16 @@ export default function RegisterForm() {
         required
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        className="w-full mb-4 px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
+      />
+
+      {/* EMAIL */}
+      <input
+        type="email"
+        placeholder="Email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className="w-full mb-4 px-4 py-3 rounded-lg border border-primary focus:outline-none focus:ring-1 focus:ring-primary text-black"
       />
 
