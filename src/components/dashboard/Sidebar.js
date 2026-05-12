@@ -2,7 +2,6 @@
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, FolderOpenDot, Trash, Upload } from "lucide-react";
 
-
 function SidebarItem({ icon, label, active = false, onClick, customBg }) {
   return (
     <button
@@ -42,13 +41,13 @@ export default function Sidebar({ onCreateClick }) {
     pathname === "/dashboard" || pathname === "/dashboard/";
 
   return (
-    <aside className="w-64 h-screen bg-[#1E293B] p-6 flex flex-col gap-8 shadow-lg-black">
+    <aside className="w-64 h-screen bg-[#1E293B] p-6 flex flex-col gap-8 shadow-lg shadow-black">
       {/* Logo */}
-      <div className="text-2xl font-bold text-white flex items-center gap-2  p-6">
+      <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
         <img
           src="logo2.png"
           alt="MyApps Logo"
-          className="w-30 h-30 ml-4 object-contain"
+          className="w-[7.5rem] h-[7.5rem] ml-4 object-contain"
         />
       </div>
 
@@ -58,7 +57,7 @@ export default function Sidebar({ onCreateClick }) {
           icon={isFolderRoute ? <Upload /> : "+"}
           label={isFolderRoute ? " " : " "}
           onClick={handleTopButtonClick}
-          customBg="bg-[#3B82F6] flex justify-center items-center text-2xl"
+          customBg="bg-[#3B82F6] text-white justify-center items-center rounded-xl px-4 py-2 transition-all duration-200 hover:bg-[#357AE8] active:bg-[#2F6FD6] active:scale-[0.98] shadow-md hover:shadow-lg"
         />
         <SidebarItem
           icon={<LayoutDashboard fill="white" />}
@@ -72,7 +71,7 @@ export default function Sidebar({ onCreateClick }) {
           active={isFolderRoute || isDashboardActive}
           onClick={() => router.push("/dashboard")}
         />
-        <SidebarItem icon={<Trash fill="white" />} label="Trash" />
+        {/* <SidebarItem icon={<Trash fill="white" />} label="Trash" /> */}
       </nav>
     </aside>
   );

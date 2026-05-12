@@ -20,7 +20,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-24 bg-slate-50 px-6">
+    <section className="py-24 bg-slate-50 px-6" id="features">
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10">
         {features.map((f, i) => (
           <Link key={i} href={`/features/${f.slug}`}>

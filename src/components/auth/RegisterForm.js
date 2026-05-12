@@ -135,13 +135,6 @@ export default function RegisterForm() {
         </Link>
       </p>
 
-      {/* GOOGLE */}
-      <button
-        type="button"
-        className="w-full border border-primary py-3 rounded-lg text-primary font-medium hover:bg-primary hover:text-white transition-all"
-      >
-        Login with Google
-      </button>
     </form>
   );
 }

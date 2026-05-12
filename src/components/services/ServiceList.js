@@ -35,14 +35,14 @@ export default function ServiceList() {
       <div className="max-w-6xl mx-auto grid">
         {/* Heading */}
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight text-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight text-center">
             Your Files,{" "}
             <span className="text-secondary italic">Our Responsibility</span>
           </h2>
         </div>
 
         {/* Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-white">
           {services.map((service, i) => (
             <ServiceCard
               key={i}
