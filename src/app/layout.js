@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Company Profile",
+  title: "Tarchiver-Lite",
   description: "Company Profile website team 3",
 };
 

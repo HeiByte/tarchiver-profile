@@ -10,14 +10,13 @@ import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MainContent() {
-  const { folders, setFolders, showToast } = useFolders();
+  const { folders, setFolders, isLoading, setIsLoading, showToast } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
-  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  // ─── useOptimistic ───
+  // ─── useOptimistic UI───
   const [optimisticFolders, setOptimisticFolders] = useOptimistic(
     folders,
     (currentFolders, deletedId) =>
@@ -30,7 +29,7 @@ export default function MainContent() {
 
   useEffect(() => {
     const fetchFolders = async () => {
-      setLoading(true);
+      setIsLoading(true); 
       try {
         const {
           data: { user },
@@ -60,7 +59,7 @@ export default function MainContent() {
       } catch (error) {
         showToast("Failed to load folder: " + error.message, "error");
       } finally {
-        setLoading(false);
+        setIsLoading(false); 
       }
     };
 
@@ -111,7 +110,6 @@ export default function MainContent() {
     setFolderToDelete(null);
 
     startTransition(async () => {
-      
       setOptimisticFolders(idToDelete);
 
       try {
@@ -122,7 +120,6 @@ export default function MainContent() {
 
         const targetFolder = folders.find((f) => f.id === idToDelete);
 
-        // Hapus files dari storage jika ada
         if (targetFolder?.files?.length > 0) {
           const storagePaths = targetFolder.files
             .map((f) => f.storage_path)
@@ -139,7 +136,6 @@ export default function MainContent() {
           }
         }
 
-        // Hapus folder dari database
         const { error } = await supabase
           .from("folders")
           .delete()
@@ -147,11 +143,9 @@ export default function MainContent() {
 
         if (error) throw error;
 
-       
         setFolders((prev) => prev.filter((f) => f.id !== idToDelete));
         showToast("Folder deleted!", "success");
       } catch (error) {
-      
         showToast("Delete failed: " + error.message, "error");
       }
     });
@@ -160,8 +154,7 @@ export default function MainContent() {
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
       <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden relative">
-        {/* ─── Skeleton Loading awal ──────── */}
-        {loading ? (
+        {isLoading ? (
           <FolderGridSkeleton />
         ) : optimisticFolders.length === 0 ? (
           <EmptyState onAdd={() => setIsModalOpen(true)} />
@@ -189,7 +182,6 @@ export default function MainContent() {
     </div>
   );
 }
-
 
 function FolderGridSkeleton() {
   return (
@@ -266,7 +258,7 @@ function FolderItem({ id, name, onDeleteClick }) {
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
         {menuOpen && (
-          <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
+          <div className="absolute right-[-7.5rem] top-2 bg-white z-10 w-[7.5rem] rounded overflow-hidden">
             <button
               onClick={handleDeleteClick}
               className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
