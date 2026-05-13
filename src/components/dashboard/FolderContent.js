@@ -2,7 +2,7 @@
 import { useRef, useState, useOptimistic, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
-import { EllipsisVertical, FileText, Upload } from "lucide-react";
+import { EllipsisVertical, FileText, Upload, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { forwardRef } from "react";
@@ -18,7 +18,7 @@ const uploadSchema = z.object({
 });
 
 export default function FolderContent({ folderId }) {
-  const { folders, setFolders, showToast } = useFolders();
+  const { folders, setFolders, isLoading, showToast } = useFolders(); 
   const fileInputRef = useRef(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -34,6 +34,16 @@ export default function FolderContent({ folderId }) {
   );
 
   const [isPending, startTransition] = useTransition();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden flex items-center justify-center">
+          <Loader2 className="w-10 h-10 text-[#3B82F6] animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   if (!folder) {
     return (
@@ -169,7 +179,7 @@ export default function FolderContent({ folderId }) {
     }
   };
 
-  // ─── Hapus file dengan Optimistic UI ─────
+  // Hapus file dengan Optimistic UI 
   const handleDeleteConfirm = () => {
     if (!fileToDelete?.id) {
       showToast("Failed: Invalid File ID", "error");
@@ -177,13 +187,12 @@ export default function FolderContent({ folderId }) {
     }
 
     const targetFile = fileToDelete;
-    setFileToDelete(null); 
+    setFileToDelete(null);
 
     startTransition(async () => {
       setOptimisticFiles(targetFile.id);
 
       try {
-        // Hapus dari Storage
         if (targetFile.storage_path) {
           const { error: storageError } = await supabase.storage
             .from("tarchive-bucket")
@@ -192,7 +201,6 @@ export default function FolderContent({ folderId }) {
           if (storageError) throw storageError;
         }
 
-        // Hapus dari Database
         const { error: dbError } = await supabase
           .from("files")
           .delete()
@@ -219,7 +227,25 @@ export default function FolderContent({ folderId }) {
     });
   };
 
-  // Filter files untuk search
+  const handleDownload = async (file) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("tarchive-bucket")
+        .download(file.storage_path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.original_name || file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      showToast("Download failed: " + error.message, "error");
+    }
+  };
+
   const filteredFiles = optimisticFiles.filter((file) =>
     (file.original_name || file.name)
       .toLowerCase()
@@ -238,14 +264,13 @@ export default function FolderContent({ folderId }) {
           onChange={handleFileChange}
         />
 
-        {/* Upload loading skeleton */}
         {uploading && <UploadingSkeleton />}
 
         {!uploading && filteredFiles.length === 0 ? (
           <EmptyStateFile onUpload={handleUploadClick} />
         ) : (
           !uploading && (
-            <FileGrid items={filteredFiles} onDeleteClick={setFileToDelete} />
+            <FileGrid items={filteredFiles} onDeleteClick={setFileToDelete} onDownloadClick={handleDownload} />
           )
         )}
 
@@ -254,6 +279,7 @@ export default function FolderContent({ folderId }) {
           onClose={() => setFileToDelete(null)}
           onConfirm={handleDeleteConfirm}
           title="Delete File"
+          confirmText="Delete"
           message={`Delete "${fileToDelete?.original_name || fileToDelete?.name}"?`}
         />
       </div>
@@ -261,7 +287,6 @@ export default function FolderContent({ folderId }) {
   );
 }
 
-// ─── Skeleton saat upload sedang berlangsung ───
 function UploadingSkeleton() {
   return (
     <div className="flex flex-col gap-6 mt-4">
@@ -292,18 +317,18 @@ const EmptyStateFile = forwardRef(({ onUpload }, ref) => (
 ));
 EmptyStateFile.displayName = "EmptyStateFile";
 
-const FileGrid = forwardRef(({ items, onDeleteClick }, ref) => (
+const FileGrid = forwardRef(({ items, onDeleteClick, onDownloadClick }, ref) => (
   <div className="flex flex-col gap-6 mt-4">
     <div className="flex flex-col flex-wrap gap-6">
       {items.map((item) => (
-        <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} />
+        <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} onDownloadClick={onDownloadClick} />
       ))}
     </div>
   </div>
 ));
 FileGrid.displayName = "FileGrid";
 
-function FileItem({ file, onDeleteClick }) {
+function FileItem({ file, onDeleteClick, onDownloadClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuClick = (e) => {
@@ -317,6 +342,13 @@ function FileItem({ file, onDeleteClick }) {
     e.stopPropagation();
     setMenuOpen(false);
     onDeleteClick(file);
+  };
+
+  const handleDownloadClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuOpen(false);
+    onDownloadClick(file);
   };
 
   return (
@@ -339,7 +371,13 @@ function FileItem({ file, onDeleteClick }) {
         <EllipsisVertical className="w-5 h-5 text-black" />
       </button>
       {menuOpen && (
-        <div className="absolute -right-30 top-2 bg-white z-10 w-30 rounded overflow-hidden">
+        <div className="absolute right-[-7.5rem] top-2 bg-white z-10 w-[7.5rem] rounded overflow-hidden">
+          <button
+            onClick={handleDownloadClick}
+            className="w-full px-4 hover:bg-blue-100 text-blue-600 font-bold border-2 border-black border-b-0 transition-all"
+          >
+            Download
+          </button>
           <button
             onClick={handleDeleteClick}
             className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"

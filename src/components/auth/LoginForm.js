@@ -93,14 +93,7 @@ export default function LoginForm() {
           Signup
         </Link>
       </p>
-
-      {/* GOOGLE */}
-      <button
-        type="button"
-        className="w-full border border-black py-3 rounded-lg text-black font-medium hover:bg-primary transition-all hover:text-white"
-      >
-        Login with Google
-      </button>
+      
     </form>
   );
 }
