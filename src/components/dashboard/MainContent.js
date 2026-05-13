@@ -175,6 +175,7 @@ export default function MainContent() {
           isOpen={!!folderToDelete}
           onClose={() => setFolderToDelete(null)}
           onConfirm={handleDeleteConfirm}
+          confirmText="Delete"
           title="Delete Folder"
           message="Delete this folder and all its contents?"
         />

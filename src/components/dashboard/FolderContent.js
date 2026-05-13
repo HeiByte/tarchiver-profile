@@ -279,6 +279,7 @@ export default function FolderContent({ folderId }) {
           onClose={() => setFileToDelete(null)}
           onConfirm={handleDeleteConfirm}
           title="Delete File"
+          confirmText="Delete"
           message={`Delete "${fileToDelete?.original_name || fileToDelete?.name}"?`}
         />
       </div>

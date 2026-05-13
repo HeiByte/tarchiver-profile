@@ -1,6 +1,11 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FolderOpenDot, Trash, Upload } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderOpenDot,
+  Upload,
+  DatabaseBackup,
+} from "lucide-react";
 
 function SidebarItem({ icon, label, active = false, onClick, customBg }) {
   return (
@@ -28,6 +33,7 @@ export default function Sidebar({ onCreateClick }) {
   const router = useRouter();
 
   const isFolderRoute = pathname?.startsWith("/dashboard/folder/");
+  const isBackupsRoute = pathname === "/dashboard/backups";
 
   const handleTopButtonClick = () => {
     if (isFolderRoute) {
@@ -38,7 +44,8 @@ export default function Sidebar({ onCreateClick }) {
   };
 
   const isDashboardActive =
-    pathname === "/dashboard" || pathname === "/dashboard/";
+    !isBackupsRoute &&
+    (pathname === "/dashboard" || pathname === "/dashboard/");
 
   return (
     <aside className="w-64 h-screen bg-[#1E293B] p-6 flex flex-col gap-8 shadow-lg shadow-black">
@@ -53,25 +60,35 @@ export default function Sidebar({ onCreateClick }) {
 
       {/* List Button/Menu */}
       <nav className="flex flex-col gap-2 text-white items-center">
-        <SidebarItem
-          icon={isFolderRoute ? <Upload /> : "+"}
-          label={isFolderRoute ? " " : " "}
-          onClick={handleTopButtonClick}
-          customBg="bg-[#3B82F6] text-white justify-center items-center rounded-xl px-4 py-2 transition-all duration-200 hover:bg-[#357AE8] active:bg-[#2F6FD6] active:scale-[0.98] shadow-md hover:shadow-lg"
-        />
+        {!isBackupsRoute && (
+          <SidebarItem
+            icon={isFolderRoute ? <Upload /> : "+"}
+            label={isFolderRoute ? " " : " "}
+            onClick={handleTopButtonClick}
+            customBg="bg-[#3B82F6] text-white justify-center items-center rounded-xl px-4 py-2 transition-all duration-200 hover:bg-[#357AE8] active:bg-[#2F6FD6] active:scale-[0.98] shadow-md hover:shadow-lg"
+          />
+        )}
+
         <SidebarItem
           icon={<LayoutDashboard fill="white" />}
           label="Dashboard"
           active={isDashboardActive}
           onClick={() => router.push("/dashboard")}
         />
+
         <SidebarItem
           icon={<FolderOpenDot fill="white" />}
           label="My Files"
-          active={isFolderRoute || isDashboardActive}
+          active={isFolderRoute}
           onClick={() => router.push("/dashboard")}
         />
-        {/* <SidebarItem icon={<Trash fill="white" />} label="Trash" /> */}
+
+        <SidebarItem
+          icon={<DatabaseBackup fill="white" />}
+          label="Backups"
+          active={isBackupsRoute}
+          onClick={() => router.push("/dashboard/backups")}
+        />
       </nav>
     </aside>
   );
