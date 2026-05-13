@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { logout } from "@/components/auth/auth";
-import { User, Settings, Trash2, LogOut } from "lucide-react";
+import { User, Settings, LogOut } from "lucide-react";
 
 export default function ProfileActions({ onClose, onEditProfile }) {
   const router = useRouter();
@@ -20,7 +20,6 @@ export default function ProfileActions({ onClose, onEditProfile }) {
   const menuItems = [
     { label: "Profile", icon: <User size={20} />, onClick: onEditProfile, active: true },
     { label: "Setting", icon: <Settings size={20} />, onClick: null, active: false },
-    { label: "Delete Akun", icon: <Trash2 size={20} />, onClick: null, active: false },
   ];
 
   return (

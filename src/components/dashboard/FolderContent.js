@@ -227,6 +227,25 @@ export default function FolderContent({ folderId }) {
     });
   };
 
+  const handleDownload = async (file) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("tarchive-bucket")
+        .download(file.storage_path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.original_name || file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      showToast("Download failed: " + error.message, "error");
+    }
+  };
+
   const filteredFiles = optimisticFiles.filter((file) =>
     (file.original_name || file.name)
       .toLowerCase()
@@ -251,7 +270,7 @@ export default function FolderContent({ folderId }) {
           <EmptyStateFile onUpload={handleUploadClick} />
         ) : (
           !uploading && (
-            <FileGrid items={filteredFiles} onDeleteClick={setFileToDelete} />
+            <FileGrid items={filteredFiles} onDeleteClick={setFileToDelete} onDownloadClick={handleDownload} />
           )
         )}
 
@@ -297,18 +316,18 @@ const EmptyStateFile = forwardRef(({ onUpload }, ref) => (
 ));
 EmptyStateFile.displayName = "EmptyStateFile";
 
-const FileGrid = forwardRef(({ items, onDeleteClick }, ref) => (
+const FileGrid = forwardRef(({ items, onDeleteClick, onDownloadClick }, ref) => (
   <div className="flex flex-col gap-6 mt-4">
     <div className="flex flex-col flex-wrap gap-6">
       {items.map((item) => (
-        <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} />
+        <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} onDownloadClick={onDownloadClick} />
       ))}
     </div>
   </div>
 ));
 FileGrid.displayName = "FileGrid";
 
-function FileItem({ file, onDeleteClick }) {
+function FileItem({ file, onDeleteClick, onDownloadClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuClick = (e) => {
@@ -322,6 +341,13 @@ function FileItem({ file, onDeleteClick }) {
     e.stopPropagation();
     setMenuOpen(false);
     onDeleteClick(file);
+  };
+
+  const handleDownloadClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuOpen(false);
+    onDownloadClick(file);
   };
 
   return (
@@ -345,6 +371,12 @@ function FileItem({ file, onDeleteClick }) {
       </button>
       {menuOpen && (
         <div className="absolute right-[-7.5rem] top-2 bg-white z-10 w-[7.5rem] rounded overflow-hidden">
+          <button
+            onClick={handleDownloadClick}
+            className="w-full px-4 hover:bg-blue-100 text-blue-600 font-bold border-2 border-black border-b-0 transition-all"
+          >
+            Download
+          </button>
           <button
             onClick={handleDeleteClick}
             className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
