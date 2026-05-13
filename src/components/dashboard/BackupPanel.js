@@ -96,8 +96,6 @@ function BackupSkeletonItem() {
         <Skeleton className="h-3 w-3/4 rounded" />
         <Skeleton className="h-3 w-1/3 rounded" />
       </div>
-
-      <Skeleton className="w-24 h-8 rounded-md flex-shrink-0" />
     </div>
   );
 }
