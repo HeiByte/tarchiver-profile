@@ -153,7 +153,7 @@ export default function MainContent() {
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">
-      <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden relative">
+      <div className="flex-1 p-6 bg-white m-6 border-[#164B99] border-2 rounded overflow-hidden relative">
         {isLoading ? (
           <FolderGridSkeleton />
         ) : optimisticFolders.length === 0 ? (
@@ -213,7 +213,7 @@ function EmptyState({ onAdd }) {
 
 function FolderGrid({ items, onDeleteClick }) {
   return (
-    <div className="flex flex-col flex-wrap gap-6 overflow-y-auto">
+    <div className="flex flex-col flex-wrap gap-4 overflow-y-auto">
       {items.map((item) => (
         <FolderItem
           key={item.id}
@@ -248,8 +248,8 @@ function FolderItem({ id, name, onDeleteClick }) {
         className="flex items-center gap-4 cursor-pointer relative max-w-sm hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all p-2 rounded"
         onMouseLeave={() => setMenuOpen(false)}
       >
-        <Folder className="w-10 h-10 fill-black" />
-        <span className="font-bold text-sm mt-1 text-black flex-1 truncate">
+        <Folder className="w-8 h-8 fill-black" />
+        <span className="font-bold text-xs mt-1 text-black flex-1 truncate">
           {name}
         </span>
         <button
@@ -259,10 +259,10 @@ function FolderItem({ id, name, onDeleteClick }) {
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
         {menuOpen && (
-          <div className="absolute right-[-7.5rem] top-2 bg-white z-10 w-[7.5rem] rounded overflow-hidden">
+          <div className="absolute right-[-6rem] top-2 bg-white z-10 w-24 rounded overflow-hidden">
             <button
               onClick={handleDeleteClick}
-              className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
+              className="w-full px-4 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
             >
               Delete
             </button>
