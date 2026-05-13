@@ -7,7 +7,7 @@ export async function POST(request) {
   const supabase = createClient(cookieStore);
 
   try {
-    // ─── Auth ────────
+    // ─── Auth ──────
     const {
       data: { user },
       error: authError,
@@ -29,6 +29,7 @@ export async function POST(request) {
       );
     }
 
+    // ─── Ambil backup record ──────
     const { data: backupRecord, error: recordError } = await supabase
       .from("backups")
       .select("*")
@@ -80,9 +81,13 @@ export async function POST(request) {
       );
     }
 
-    const { folders: snapshotFolders = [], files: snapshotFiles = [] } =
-      snapshot;
+    const {
+      folders: snapshotFolders = [],
+      files: snapshotFiles = [],
+      version = 1,
+    } = snapshot;
 
+    // ─── Ambil data existing ───────
     const { data: existingFolders } = await supabase
       .from("folders")
       .select("id")
@@ -99,7 +104,9 @@ export async function POST(request) {
     const errors = [];
     let foldersRestored = 0;
     let filesRestored = 0;
+    let filesSkipped = 0;
 
+    // ─── Restore folders ─────
     const foldersToInsert = snapshotFolders.filter(
       (f) => !existingFolderIds.has(f.id),
     );
@@ -125,30 +132,105 @@ export async function POST(request) {
       }
     }
 
+    // ─── Restore files ────────
     const filesToRestore = snapshotFiles.filter(
       (f) => !existingFileIds.has(f.id),
     );
 
     for (const file of filesToRestore) {
-      if (!file.storage_path) {
-        errors.push(`File ${file.name} skipped: no storage_path`);
+      const fileName = file.original_name || file.name;
+
+      if (version >= 2 && file.backup_hash && file.backup_object_path) {
+        const { data: backedUpBlob, error: backupDownloadErr } =
+          await supabase.storage
+            .from("tarchive-backups")
+            .download(file.backup_object_path);
+
+        if (backupDownloadErr || !backedUpBlob) {
+          errors.push(
+            `${fileName}: backup object not found - ${backupDownloadErr?.message || "unknown"}`,
+          );
+          filesSkipped++;
+          continue;
+        }
+
+        // Cek apakah file sudah ada di storage utama
+        const dirPath = file.storage_path.split("/").slice(0, -1).join("/");
+        const fileBaseName = file.storage_path.split("/").pop();
+
+        const { data: existingInStorage } = await supabase.storage
+          .from("tarchive-bucket")
+          .list(dirPath, { search: fileBaseName });
+
+        const physicalExists = existingInStorage?.some(
+          (f) => f.name === fileBaseName,
+        );
+
+        if (!physicalExists) {
+          // Re-upload file ke storage utama
+          const { error: reuploadErr } = await supabase.storage
+            .from("tarchive-bucket")
+            .upload(file.storage_path, backedUpBlob, {
+              contentType: file.mime_type || "application/octet-stream",
+              upsert: false,
+            });
+
+          if (reuploadErr) {
+            errors.push(
+              `${fileName}: re-upload failed - ${reuploadErr.message}`,
+            );
+            filesSkipped++;
+            continue;
+          }
+        }
+
+        // Insert/upsert record di database
+        const { error: fileInsertError } = await supabase.from("files").upsert(
+          {
+            id: file.id,
+            name: file.name,
+            original_name: file.original_name,
+            extension: file.extension,
+            mime_type: file.mime_type,
+            folder_id: file.folder_id,
+            user_id: userId,
+            storage_path: file.storage_path,
+            size: file.size,
+            created_at: file.created_at,
+          },
+          { onConflict: "id", ignoreDuplicates: true },
+        );
+
+        if (fileInsertError) {
+          errors.push(`${fileName} DB error: ` + fileInsertError.message);
+          filesSkipped++;
+        } else {
+          filesRestored++;
+        }
+
         continue;
       }
 
-      const { data: fileCheck, error: fileCheckError } = await supabase.storage
-        .from("tarchive-bucket")
-        .list(file.storage_path.split("/").slice(0, -1).join("/"), {
-          search: file.storage_path.split("/").pop(),
-        });
+      if (!file.storage_path) {
+        errors.push(`${fileName}: no storage_path`);
+        filesSkipped++;
+        continue;
+      }
 
-      const physicalExists =
-        !fileCheckError &&
-        fileCheck?.some((f) => f.name === file.storage_path.split("/").pop());
+      const dirPath = file.storage_path.split("/").slice(0, -1).join("/");
+      const fileBaseName = file.storage_path.split("/").pop();
+
+      const { data: fileCheck } = await supabase.storage
+        .from("tarchive-bucket")
+        .list(dirPath, { search: fileBaseName });
+
+      const physicalExists = fileCheck?.some((f) => f.name === fileBaseName);
 
       if (!physicalExists) {
         errors.push(
-          `File ${file.original_name || file.name} skipped: physical file not found in storage`,
+          `${fileName}: physical file not found in storage (legacy backup — no physical copy)`,
         );
+        filesSkipped++;
         continue;
       }
 
@@ -169,9 +251,8 @@ export async function POST(request) {
       );
 
       if (fileInsertError) {
-        errors.push(
-          `File ${file.name} restore error: ` + fileInsertError.message,
-        );
+        errors.push(`${fileName} DB error: ` + fileInsertError.message);
+        filesSkipped++;
       } else {
         filesRestored++;
       }
@@ -182,6 +263,7 @@ export async function POST(request) {
       restored: {
         folders: foldersRestored,
         files: filesRestored,
+        skipped: filesSkipped,
       },
       warnings: errors.length > 0 ? errors : undefined,
     });
