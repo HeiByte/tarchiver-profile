@@ -1,27 +1,20 @@
-"use client"; 
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { Menu, X } from "lucide-react";
 
 export default function MobileMenu({ links, pathname }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="md:hidden">
-     {/* ===HAMBURGER MENU=== */}
-      <button 
+      {/* ===HAMBURGER MENU=== */}
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 text-slate-600 focus:outline-none"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {isOpen ? (
-            // Icon X (Close)
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            // Icon Hamburger
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-          )}
-        </svg>
+        {isOpen ? <X className="text-white" size={24} /> : <Menu className="text-white" size={24} />}
       </button>
 
       {/* ===Dropdown Menu==== */}
@@ -31,9 +24,11 @@ export default function MobileMenu({ links, pathname }) {
             <Link
               key={link.path}
               href={link.path}
-              onClick={() => setIsOpen(false)} 
+              onClick={() => setIsOpen(false)}
               className={`px-4 py-3 rounded-md text-base font-medium ${
-                pathname === link.path ? "bg-amber-100 text-amber-700" : "text-slate-600"
+                pathname === link.path
+                  ? "bg-amber-100 text-amber-700"
+                  : "text-slate-600"
               }`}
             >
               {link.name}
