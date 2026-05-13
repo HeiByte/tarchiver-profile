@@ -304,12 +304,12 @@ function UploadingSkeleton() {
 
 const EmptyStateFile = forwardRef(({ onUpload }, ref) => (
   <div className="flex flex-col items-center justify-center h-full">
-    <div className="flex flex-col items-center justify-center border-2 border-blue-500 m-40 text-center p-20 border-dashed">
+    <div className="flex flex-col items-center justify-center border-2 border-blue-500 m-40 text-center p-16 border-dashed">
       <button
         onClick={onUpload}
         className="flex items-center justify-center px-4 mb-4 py-2 text-center"
       >
-        <Upload className="bg-[#3B82F6] p-4 w-16 h-16 rounded-md hover:bg-blue-400 active:shadow-none active:translate-y-1 transition-all" />
+        <Upload className="bg-[#3B82F6] text-white p-4 w-16 h-16 rounded-md hover:bg-blue-400 active:shadow-none active:translate-y-1 transition-all" />
       </button>
       <p className="text-2xl text-black">Upload Files</p>
     </div>
@@ -353,34 +353,34 @@ function FileItem({ file, onDeleteClick, onDownloadClick }) {
 
   return (
     <div
-      className="flex items-center gap-4 cursor-pointer w-full max-w-xl p-2 hover:bg-blue-50 border-2 border-transparent hover:border-black rounded transition-all relative"
+      className="flex items-center gap-4 cursor-pointer w-full max-w-xs p-2 hover:bg-blue-50 border-2 border-transparent hover:border-blue-600 rounded transition-all relative"
       onMouseLeave={() => setMenuOpen(false)}
     >
-      <div className="w-16 h-12 flex items-center justify-center">
-        <FileText className="w-12 h-12 text-white fill-blue-600" />
+      <div className="w-12 h-12 flex items-center justify-center">
+        <FileText className="w-10 h-10 text-white fill-blue-600" />
       </div>
       <div className="flex flex-col flex-1 min-w-0">
-        <span className="font-bold text-sm text-black truncate">
+        <span className="font-bold text-xs text-black truncate">
           {file.name}
         </span>
       </div>
       <button
         onClick={handleMenuClick}
-        className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
+        className="p-2 hover:bg-blue-100 rounded-full border-2 border-transparent hover:border-blue-600"
       >
         <EllipsisVertical className="w-5 h-5 text-black" />
       </button>
       {menuOpen && (
-        <div className="absolute right-[-7.5rem] top-2 bg-white z-10 w-[7.5rem] rounded overflow-hidden">
+        <div className="absolute right-[-6rem] top-2 bg-white z-10 w-24 rounded overflow-hidden">
           <button
             onClick={handleDownloadClick}
-            className="w-full px-4 hover:bg-blue-100 text-blue-600 font-bold border-2 border-black border-b-0 transition-all"
+            className="w-full px-4 hover:bg-blue-100 text-blue-600 text-xs font-bold border-1 border-blue-600 transition-all"
           >
             Download
           </button>
           <button
             onClick={handleDeleteClick}
-            className="w-full px-4 hover:bg-red-100 text-red-600 font-bold border-2 border-black transition-all"
+            className="w-full px-4 hover:bg-red-100 text-red-600 text-xs font-bold border-1 border-blue-600 transition-all"
           >
             Delete
           </button>

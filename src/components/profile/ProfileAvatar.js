@@ -5,7 +5,7 @@ export default function ProfileAvatar({ onClick, isOpen, initial = "U" }) {
     <button
       onClick={onClick}
       className={`
-        relative w-18 h-18 rounded-full overflow-hidden
+        relative w-12 h-12 rounded-full overflow-hidden
         bg-gradient-to-br from-blue-400 to-blue-500
         border-2 transition-all duration-200 cursor-pointer
         focus:outline-none
