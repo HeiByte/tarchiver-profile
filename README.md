@@ -1,82 +1,45 @@
-# Tarchiver Lite – Company Profile
+# Tarchiver Lite
 
-## 📌 Overview
+## Overview
 
-Tarchiver Lite is a company profile website that introduces a conceptual file management system designed to simplify file organization through automated structure and consistent naming.
+Tarchiver Lite is a lightweight file management application designed to simplify how files are organized, stored, and accessed.
 
-The project focuses on presenting a clear product narrative, strong branding, and a structured user interface.
-
----
-
-## 🎯 Project Scope
-
-This project includes:
-
-* Multi-page company profile:
-
-  * `/` (Home)
-  * `/about`
-  * `/services`
-  * `/contact`
-* Dynamic feature pages
-* Structured layout with reusable components
+It removes the complexity of traditional folder trees and replaces them with a more structured and automated approach. The system focuses on simplicity, consistency, and ease of use, helping users manage files without dealing with deep hierarchical structures.
 
 ---
 
-## ⚙️ Technical Implementation
+## Key Features
 
-### ✅ App Structure
+### Automatic File Naming
+Files are generated with consistent naming patterns to maintain order and reduce manual effort.
 
-Built using Next.js App Router with organized routing structure:
+### Simplified Structure (No Folder Tree Complexity)
+A flat organization system that makes files easier to manage and access.
 
-* `app/layout.js` for global layout
-* Route-based page structure
-* Nested routing for feature pages
+### Flexible Folder Types
+Users can define folder types according to their needs for better categorization.
 
----
-
-### 🔁 Dynamic Routing
-
-Dynamic routes are implemented using:
-
-* `/features/[id]`
-
-Example:
-
-* `/features/auto-naming`
-
-Each page dynamically renders content based on the selected feature.
+### Backup System
+Built-in backup functionality to help protect and restore files when needed.
 
 ---
 
-### 🧩 Components
+## Why Tarchiver Lite
 
-* **Server Components**
-  Used for rendering pages efficiently by default.
+Managing files should be simple and efficient.
 
-* **Client Components**
-  Used for interactive UI elements where needed.
+Tarchiver Lite is built to reduce unnecessary complexity in file organization, offering a cleaner and more intuitive way to handle data. It is designed for users who value structure without the burden of traditional folder systems.
 
 ---
 
+## Team
 
-## 🚀 Tech Stack
-
-* Next.js (App Router)
-* React
-* JavaScript
-* CSS / Tailwind
+- Iqbal Maulana  
+- Ihsan Nuryansyah  
+- Ipul Saepullah  
 
 ---
 
+## License
 
-
-## 👤 Teams
-* Iqbal Maulana
-* Ihsan Nuryansyah
-* Ipul Saepullah
----
-
-## 📝 License
-
-For demonstration and development purposes.
+All rights reserved.
