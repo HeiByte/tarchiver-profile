@@ -3,14 +3,23 @@ import { useRef, useState, useOptimistic, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
 import { EllipsisVertical, FileText, Upload, Loader2 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { forwardRef } from "react";
 import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 
-const supabase = createClient();
+
+function broadcastStorageUpdate() {
+  try {
+  
+    window.dispatchEvent(new Event("storage_update"));
+
+    const channel = new BroadcastChannel("storage_update");
+    channel.postMessage("refresh");
+    channel.close();
+  } catch (_) {}
+}
 
 const uploadSchema = z.object({
   fileSize: z.number().max(50 * 1024 * 1024, "File size exceeds 50MB limit."),
@@ -18,7 +27,7 @@ const uploadSchema = z.object({
 });
 
 export default function FolderContent({ folderId }) {
-  const { folders, setFolders, isLoading, showToast } = useFolders(); 
+  const { folders, setFolders, isLoading, showToast } = useFolders();
   const fileInputRef = useRef(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -27,7 +36,7 @@ export default function FolderContent({ folderId }) {
 
   const folder = folders.find((f) => f.id.toString() === folderId);
 
-  // ─── useOptimistic ui────────
+  // ─── useOptimistic UI ────────
   const [optimisticFiles, setOptimisticFiles] = useOptimistic(
     folder?.files ?? [],
     (currentFiles, deletedId) => currentFiles.filter((f) => f.id !== deletedId),
@@ -120,54 +129,40 @@ export default function FolderContent({ folderId }) {
 
     setUploading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folderId", folder.id.toString());
+      formData.append("folderName", folder.name || "");
+      formData.append("folderType", folder.type || "");
+      formData.append("fileCount", (folder.files?.length || 0).toString());
 
-      const fileSequence = String(folder.files.length + 1).padStart(2, "0");
-      const extMatch = file.name.match(/\.([^.]+)$/);
-      const ext = extMatch ? extMatch[1] : "";
-      const folderStr = (folder.name || "UNKNOWN")
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, "_");
-      const d = new Date();
-      const tglStr = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-      const generatedName = `${fileSequence}_${folderStr}_${tglStr}${ext ? "." + ext : ""}`;
-      const storagePath = `${user.id}/${folder.id}/${generatedName}`;
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-      const { error: storageError } = await supabase.storage
-        .from("tarchive-bucket")
-        .upload(storagePath, file, { upsert: true });
+      const result = await response.json();
 
-      if (storageError) throw storageError;
-
-      const { data: dbData, error: dbError } = await supabase
-        .from("files")
-        .insert([
-          {
-            name: generatedName,
-            original_name: file.name,
-            extension: ext,
-            mime_type: file.type,
-            folder_id: folder.id,
-            user_id: user.id,
-            storage_path: storagePath,
-            size: file.size,
-          },
-        ])
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        if (response.status === 413) {
+          showToast(result.error || "Storage quota exceeded (max 250MB).", "error");
+        } else {
+          showToast(result.error || "Upload failed.", "error");
+        }
+        e.target.value = "";
+        return;
+      }
 
       setFolders((prev) =>
         prev.map((f) =>
           f.id === folder.id
-            ? { ...f, files: [...(f.files || []), dbData] }
+            ? { ...f, files: [...(f.files || []), result.file] }
             : f,
         ),
       );
+
+     
+      broadcastStorageUpdate();
 
       showToast("File uploaded successfully!");
     } catch (error) {
@@ -179,7 +174,7 @@ export default function FolderContent({ folderId }) {
     }
   };
 
-  // Hapus file dengan Optimistic UI 
+  // ─── Delete via backend ─────────
   const handleDeleteConfirm = () => {
     if (!fileToDelete?.id) {
       showToast("Failed: Invalid File ID", "error");
@@ -190,24 +185,21 @@ export default function FolderContent({ folderId }) {
     setFileToDelete(null);
 
     startTransition(async () => {
+      // Optimistic
       setOptimisticFiles(targetFile.id);
 
       try {
-        if (targetFile.storage_path) {
-          const { error: storageError } = await supabase.storage
-            .from("tarchive-bucket")
-            .remove([targetFile.storage_path]);
+        const response = await fetch(`/api/files/${targetFile.id}`, {
+          method: "DELETE",
+        });
 
-          if (storageError) throw storageError;
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Delete failed");
         }
 
-        const { error: dbError } = await supabase
-          .from("files")
-          .delete()
-          .eq("id", targetFile.id);
-
-        if (dbError) throw dbError;
-
+  
         setFolders((prev) =>
           prev.map((f) =>
             f.id === targetFile.folder_id
@@ -219,6 +211,9 @@ export default function FolderContent({ folderId }) {
           ),
         );
 
+      
+        broadcastStorageUpdate();
+
         showToast("File deleted permanently", "success");
       } catch (error) {
         console.error("Detail Error:", error);
@@ -229,18 +224,16 @@ export default function FolderContent({ folderId }) {
 
   const handleDownload = async (file) => {
     try {
-      const { data, error } = await supabase.storage
-        .from("tarchive-bucket")
-        .download(file.storage_path);
+      const response = await fetch(`/api/files/${file.id}/download`);
+      const result = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(result.error || "Download failed");
 
-      const url = URL.createObjectURL(data);
+     
       const a = document.createElement("a");
-      a.href = url;
+      a.href = result.url;
       a.download = file.original_name || file.name;
       a.click();
-      URL.revokeObjectURL(url);
     } catch (error) {
       showToast("Download failed: " + error.message, "error");
     }
@@ -270,7 +263,11 @@ export default function FolderContent({ folderId }) {
           <EmptyStateFile onUpload={handleUploadClick} />
         ) : (
           !uploading && (
-            <FileGrid items={filteredFiles} onDeleteClick={setFileToDelete} onDownloadClick={handleDownload} />
+            <FileGrid
+              items={filteredFiles}
+              onDeleteClick={setFileToDelete}
+              onDownloadClick={handleDownload}
+            />
           )
         )}
 
@@ -321,7 +318,12 @@ const FileGrid = forwardRef(({ items, onDeleteClick, onDownloadClick }, ref) => 
   <div className="flex flex-col gap-6 mt-4">
     <div className="flex flex-col flex-wrap gap-6">
       {items.map((item) => (
-        <FileItem key={item.id} file={item} onDeleteClick={onDeleteClick} onDownloadClick={onDownloadClick} />
+        <FileItem
+          key={item.id}
+          file={item}
+          onDeleteClick={onDeleteClick}
+          onDownloadClick={onDownloadClick}
+        />
       ))}
     </div>
   </div>
