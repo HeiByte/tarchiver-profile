@@ -1,11 +1,28 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard,
   FolderOpenDot,
   Upload,
   DatabaseBackup,
+  HardDrive,
 } from "lucide-react";
+
+const STORAGE_LIMIT_BYTES = 262144000; // 250MB
+
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${mb.toFixed(1)} MB`;
+}
+
+function getBarColor(percent) {
+  if (percent >= 90) return "bg-red-500";
+  if (percent >= 70) return "bg-yellow-400";
+  return "bg-[#3B82F6]";
+}
 
 function SidebarItem({ icon, label, active = false, onClick, customBg }) {
   return (
@@ -25,6 +42,65 @@ function SidebarItem({ icon, label, active = false, onClick, customBg }) {
       <span>{icon}</span>
       <span>{label}</span>
     </button>
+  );
+}
+
+function StorageBar() {
+  const [usage, setUsage] = useState(null);
+
+  const fetchUsage = useCallback(() => {
+    fetch("/api/storage/usage")
+      .then((r) => r.json())
+      .then((data) => setUsage(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    // Fetch on mount
+    fetchUsage();
+    window.addEventListener("storage_update", fetchUsage);
+
+    // Untuk tab lain
+    const channel = new BroadcastChannel("storage_update");
+    channel.onmessage = () => fetchUsage();
+
+    return () => {
+      window.removeEventListener("storage_update", fetchUsage);
+      channel.close();
+    };
+  }, [fetchUsage]);
+
+  const percent = usage?.percentUsed ?? 0;
+  const barColor = getBarColor(percent);
+
+  return (
+    <div className="px-2 py-3 border-t border-white/10">
+      <div className="flex items-center gap-2 mb-2">
+        <HardDrive className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
+        <span className="text-[10px] text-white/60 font-medium">Storage</span>
+        {percent >= 90 && (
+          <span className="ml-auto text-[9px] font-bold text-red-400">
+            Almost Full
+          </span>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+          style={{ width: `${Math.min(100, percent)}%` }}
+        />
+      </div>
+
+      {/* Labels */}
+      <div className="flex justify-between mt-1.5">
+        <span className="text-[10px] text-white/40">
+          {usage ? formatBytes(usage.used) : "—"}
+        </span>
+        <span className="text-[10px] text-white/40">250 MB</span>
+      </div>
+    </div>
   );
 }
 
@@ -58,8 +134,8 @@ export default function Sidebar({ onCreateClick }) {
         />
       </div>
 
-      {/* List Button/Menu */}
-      <nav className="flex flex-col gap-2 text-white items-center text-xs">
+      {/* Nav */}
+      <nav className="flex flex-col gap-2 text-white items-center text-xs flex-1">
         {!isBackupsRoute && (
           <SidebarItem
             icon={isFolderRoute ? <Upload /> : "Create +"}
@@ -90,6 +166,8 @@ export default function Sidebar({ onCreateClick }) {
           onClick={() => router.push("/dashboard/backups")}
         />
       </nav>
+
+      <StorageBar />
     </aside>
   );
 }
