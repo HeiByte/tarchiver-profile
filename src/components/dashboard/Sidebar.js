@@ -7,6 +7,7 @@ import {
   Upload,
   DatabaseBackup,
   HardDrive,
+  Menu, X,
 } from "lucide-react";
 
 const STORAGE_LIMIT_BYTES = 262144000; // 250MB
@@ -108,6 +109,8 @@ export default function Sidebar({ onCreateClick }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const isFolderRoute = pathname?.startsWith("/dashboard/folder/");
   const isBackupsRoute = pathname === "/dashboard/backups";
 
@@ -124,7 +127,18 @@ export default function Sidebar({ onCreateClick }) {
     (pathname === "/dashboard" || pathname === "/dashboard/");
 
   return (
-    <aside className="w-48 h-screen bg-[#1E293B] p-4 flex flex-col gap-8 shadow-lg shadow-black">
+    <>
+    <button onClick={() => setMobileOpen(true)} className="fixed top-4 left-4 z-50 md:hidden bg-[#1e293b] text-white p-2 rounded-lg shadow-lg">
+      <Menu className="w-6 h-6"/>
+    </button>
+
+    <aside className={`fixed md:static top-0 left-0 z-50 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "tranlate-x-full"} md:translate-x-0`}>
+
+      <div className="flex justify-end md:hidden">
+        <button onClick={() => setMobileOpen(false)}>
+          <X className="w-6 h-6 text-white"/>
+        </button>
+      </div>
       {/* Logo */}
       <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
         <img
@@ -149,25 +163,35 @@ export default function Sidebar({ onCreateClick }) {
           icon={<LayoutDashboard fill="white" />}
           label="Dashboard"
           active={isDashboardActive}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => {
+            router.push("/dashboard");
+            setMobileOpen(false);
+          }}
         />
 
         <SidebarItem
           icon={<FolderOpenDot fill="white" />}
           label="My Files"
           active={isFolderRoute}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => {
+            router.push("/dashboard");
+            setMobileOpen(false);
+          }}
         />
 
         <SidebarItem
           icon={<DatabaseBackup fill="white" />}
           label="Backups"
           active={isBackupsRoute}
-          onClick={() => router.push("/dashboard/backups")}
+          onClick={() => {
+            router.push("/dashboard/backups");
+            setMobileOpen(false);
+          }}
         />
       </nav>
 
       <StorageBar />
     </aside>
+    </>
   );
 }
