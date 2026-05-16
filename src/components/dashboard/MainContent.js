@@ -10,7 +10,8 @@ import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MainContent() {
-  const { folders, setFolders, isLoading, setIsLoading, showToast } = useFolders();
+  const { folders, setFolders, isLoading, setIsLoading, showToast } =
+    useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ export default function MainContent() {
 
   useEffect(() => {
     const fetchFolders = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const {
           data: { user },
@@ -59,7 +60,7 @@ export default function MainContent() {
       } catch (error) {
         showToast("Failed to load folder: " + error.message, "error");
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -152,8 +153,8 @@ export default function MainContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white overflow-x-hidden">
-      <div className="flex-1 p-3 md:p-6 bg-white m-2 md:m-6 border-[#164B99] border-2 rounded overflow-y-auto relative">
+    <div className="flex flex-col h-full bg-white overflow-x-hidden">
+      <div className="flex-1 min-h-0 p-3 md:p-6 bg-white m-2 md:m-6 border-[#164B99] border-2 rounded overflow-y-auto relative">
         {isLoading ? (
           <FolderGridSkeleton />
         ) : optimisticFolders.length === 0 ? (
