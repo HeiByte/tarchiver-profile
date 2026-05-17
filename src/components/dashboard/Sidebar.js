@@ -135,7 +135,7 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
       )}
 
       <aside
-        className={`fixed md:static top-0 left-0 z-50 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed md:static top-0 left-0 z-[100000] w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="flex justify-end md:hidden">
           <button onClick={() => setMobileOpen(false)}>
