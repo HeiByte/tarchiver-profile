@@ -12,7 +12,9 @@ const loginSchema = z.object({
 const updateProfileSchema = z.object({
   name: z.string().max(100, "Max 100 characters.").optional(),
   address: z.string().max(255, "Max 255 characters.").optional(),
-  email: z.union([z.literal(""), z.string().email("Invalid email format.")]).optional(),
+  email: z
+    .union([z.literal(""), z.string().email("Invalid email format.")])
+    .optional(),
   job: z.string().max(100, "Max 100 characters.").optional(),
 });
 
@@ -49,7 +51,9 @@ export async function getUserProfile() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data: profile } = await supabase
@@ -86,19 +90,22 @@ export async function updateProfile(fields) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("User not found");
 
-  const { error } = await supabase
-    .from("profiles")
-    .upsert({
+  const { error } = await supabase.from("profiles").upsert(
+    {
       id: user.id,
       full_name: fields.name,
       address: fields.address,
       email: fields.email,
       job: fields.job,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "id" });
+    },
+    { onConflict: "id" },
+  );
 
   if (error) throw error;
   return { success: true };
@@ -111,7 +118,7 @@ export async function logout() {
   await supabase.auth.signOut();
 
   const allCookies = cookieStore.getAll();
-  allCookies.forEach(cookie => {
+  allCookies.forEach((cookie) => {
     cookieStore.delete(cookie.name);
   });
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { logout } from "@/components/auth/auth";
+import { logout } from "@/actions/auth";
 import { User, Settings, LogOut } from "lucide-react";
 
 export default function ProfileActions({ onClose, onEditProfile }) {

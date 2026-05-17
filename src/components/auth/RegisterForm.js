@@ -134,7 +134,6 @@ export default function RegisterForm() {
           Login
         </Link>
       </p>
-
     </form>
   );
 }

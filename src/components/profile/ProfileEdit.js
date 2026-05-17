@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateProfile } from "@/components/auth/auth";
+import { updateProfile } from "@/actions/auth";
 import {
   ChevronLeft,
   Check,

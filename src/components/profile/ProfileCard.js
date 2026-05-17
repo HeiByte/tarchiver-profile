@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfilePopup from "./ProfilePopup";
-import { getUserProfile } from "@/components/auth/auth";
+import { getUserProfile } from "@/actions/auth";
 
 export default function ProfileCard() {
   const [isOpen, setIsOpen] = useState(false);
