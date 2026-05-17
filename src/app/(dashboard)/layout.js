@@ -16,13 +16,11 @@ export default function DashboardLayout({ children }) {
   return (
     <FolderProvider>
       <div className="flex h-screen overflow-hidden">
-
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
           onCreateClick={() => setIsModalOpen(true)}
         />
-
         <main className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden bg-white">
           {!isBackupsRoute && <NavDash setMobileOpen={setMobileOpen} />}
           <div className="flex-1 min-h-0 overflow-auto">
