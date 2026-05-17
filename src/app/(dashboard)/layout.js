@@ -11,7 +11,6 @@ export default function DashboardLayout({ children }) {
 
   return (
     <FolderProvider>
-      {/* FIX: h-screen + overflow-hidden agar seluruh layout terkunci di viewport */}
       <div className="flex h-screen overflow-hidden">
 
         <Sidebar
