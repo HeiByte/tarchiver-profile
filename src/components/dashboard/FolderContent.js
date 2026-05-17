@@ -181,6 +181,7 @@ export default function FolderContent({ folderId }) {
     setFileToDelete(null);
 
     startTransition(async () => {
+      // Optimistic
       setOptimisticFiles(targetFile.id);
 
       try {
@@ -194,6 +195,7 @@ export default function FolderContent({ folderId }) {
           throw new Error(result.error || "Delete failed");
         }
 
+  
         setFolders((prev) =>
           prev.map((f) =>
             f.id === targetFile.folder_id
