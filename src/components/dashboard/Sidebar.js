@@ -57,11 +57,9 @@ function StorageBar() {
   }, []);
 
   useEffect(() => {
-    // Fetch on mount
     fetchUsage();
     window.addEventListener("storage_update", fetchUsage);
 
-    // Untuk tab lain
     const channel = new BroadcastChannel("storage_update");
     channel.onmessage = () => fetchUsage();
 
@@ -86,7 +84,6 @@ function StorageBar() {
         )}
       </div>
 
-      {/* Progress bar */}
       <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ${barColor}`}
@@ -94,7 +91,6 @@ function StorageBar() {
         />
       </div>
 
-      {/* Labels */}
       <div className="flex justify-between mt-1.5">
         <span className="text-[10px] text-white/40">
           {usage ? formatBytes(usage.used) : "—"}
@@ -123,6 +119,10 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
   const isDashboardActive =
     !isBackupsRoute &&
     (pathname === "/dashboard" || pathname === "/dashboard/");
+  const handleMyFilesClick = () => {
+    router.push("/dashboard");
+    setMobileOpen(false);
+  };
 
   return (
     <>
@@ -135,17 +135,16 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
       )}
 
       <aside
-        className={`fixed md:static top-0 left-0 z-50 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed md:static top-0 left-0 z-40 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="flex justify-end md:hidden">
           <button onClick={() => setMobileOpen(false)}>
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
-        {/* Logo */}
         <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
           <img
-            src="logo2.png"
+            src="/logo2.png"
             alt="MyApps Logo"
             className="w-20 h-20 ml-4 object-contain"
           />
@@ -171,15 +170,11 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
               setMobileOpen(false);
             }}
           />
-
           <SidebarItem
             icon={<FolderOpenDot fill="white" />}
             label="My Files"
             active={isFolderRoute}
-            onClick={() => {
-              router.push("/dashboard");
-              setMobileOpen(false);
-            }}
+            onClick={handleMyFilesClick}
           />
 
           <SidebarItem
@@ -191,6 +186,7 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
               setMobileOpen(false);
             }}
           />
+
         </nav>
 
         <StorageBar />

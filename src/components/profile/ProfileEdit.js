@@ -45,13 +45,16 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
       value: form.name,
       disabled: false,
       icon: <User size={20} />,
+      placeholder: "Not Set",
     },
     {
-      label: "Contact",
-      name: "contact",
+      label: "Contact (Email)",
+      name: "email",
       value: form.email,
-      disabled: false,
+      disabled: true,
       icon: <Mail size={20} />,
+      placeholder: "Not Set",
+      hint: "Email cannot be changed here",
     },
     {
       label: "Address",
@@ -59,6 +62,7 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
       value: form.address,
       disabled: false,
       icon: <MapPin size={20} />,
+      placeholder: "Not Set",
     },
     {
       label: "Job",
@@ -66,13 +70,14 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
       value: form.job,
       disabled: false,
       icon: <Briefcase size={20} />,
+      placeholder: "Not Set",
     },
   ];
 
   const displayName = (user?.name || user?.username || "User").toUpperCase();
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#FBFCFD] flex flex-col items-center justify-center p-6">
+    <div className="fixed inset-0 z-[200000] bg-[#FBFCFD] flex flex-col items-center justify-center p-6">
       {/* Card */}
       <div className="w-full max-w-2xl bg-[#F8FAFC] rounded-3xl shadow-2xl px-12 py-10 flex flex-col items-center gap-6">
         {/* Avatar */}
@@ -95,9 +100,18 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
         <div className="w-full flex flex-col gap-5 mt-2">
           {fields.map((field) => (
             <div key={field.name} className="flex flex-col gap-1">
-              <span className="text-xs text-black ml-10">{field.label}</span>
+              <div className="flex items-center justify-between ml-10">
+                <span className="text-xs text-black">{field.label}</span>
+                {field.hint && (
+                  <span className="text-[10px] text-gray-400 italic">
+                    {field.hint}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-3">
-                <span className="text-black flex-shrink-0">
+                <span
+                  className={`flex-shrink-0 ${field.disabled ? "text-gray-300" : "text-black"}`}
+                >
                   {field.icon}
                 </span>
                 <input
@@ -106,10 +120,15 @@ export default function ProfileEdit({ user, onBack, onSaved }) {
                   value={field.value}
                   onChange={handleChange}
                   disabled={field.disabled}
-                  placeholder="Not Set"
-                  className="flex-1 text-sm text-gray-700 bg-transparent border-0 border-b border-gray-300
-                    focus:outline-none focus:border-blue-400 pb-1
-                    placeholder:text-gray-300 disabled:text-gray-400 transition-colors"
+                  placeholder={field.placeholder}
+                  className={`flex-1 text-sm bg-transparent border-0 border-b pb-1
+                    focus:outline-none transition-colors
+                    placeholder:text-gray-300
+                    ${
+                      field.disabled
+                        ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "text-gray-700 border-gray-300 focus:border-blue-400"
+                    }`}
                 />
               </div>
             </div>
