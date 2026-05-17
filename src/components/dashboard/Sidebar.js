@@ -73,7 +73,7 @@ function StorageBar() {
   const barColor = getBarColor(percent);
 
   return (
-    <div className="px-2 py-3 border-t border-white/10">
+    <div className="px-2 py-3 border-t border-white/10 flex-shrink-0">
       <div className="flex items-center gap-2 mb-2">
         <HardDrive className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
         <span className="text-[10px] text-white/60 font-medium">Storage</span>
@@ -126,23 +126,36 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
 
   return (
     <>
-      {/* Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 z-[70] md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed md:static top-0 left-0 z-40 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`
+          fixed md:static top-0 left-0 z-[80] md:z-auto
+          w-64 md:w-48
+          h-screen
+          bg-[#1e293b]
+          p-4
+          flex flex-col
+          shadow-lg shadow-black
+          transition-transform duration-300
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+        `}
       >
-        <div className="flex justify-end md:hidden">
+        {/* Close button mobile */}
+        <div className="flex justify-end md:hidden flex-shrink-0">
           <button onClick={() => setMobileOpen(false)}>
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
-        <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
+
+        {/* Logo */}
+        <div className="text-2xl font-bold text-white flex items-center gap-2 p-6 flex-shrink-0">
           <img
             src="/logo2.png"
             alt="MyApps Logo"
@@ -150,8 +163,8 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
           />
         </div>
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-2 text-white items-center text-xs flex-1">
+       
+        <nav className="flex flex-col gap-2 text-white items-center text-xs flex-1 overflow-y-auto min-h-0">
           {!isBackupsRoute && (
             <SidebarItem
               icon={isFolderRoute ? <Upload /> : "Create +"}
@@ -186,7 +199,6 @@ export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
               setMobileOpen(false);
             }}
           />
-
         </nav>
 
         <StorageBar />

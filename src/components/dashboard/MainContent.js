@@ -17,7 +17,6 @@ export default function MainContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  // ─── useOptimistic UI───
   const [optimisticFolders, setOptimisticFolders] = useOptimistic(
     folders,
     (currentFolders, deletedId) =>
@@ -103,7 +102,6 @@ export default function MainContent() {
     }
   };
 
-  // ─── Hapus folder dengan Optimistic UI ───────────────────────────────────
   const handleDeleteConfirm = () => {
     if (!folderToDelete) return;
 
@@ -233,7 +231,7 @@ function FolderItem({ id, name, onDeleteClick }) {
   const handleMenuClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuOpen(!menuOpen);
+    setMenuOpen((prev) => !prev);
   };
 
   const handleDeleteClick = (e) => {
@@ -255,15 +253,16 @@ function FolderItem({ id, name, onDeleteClick }) {
         </span>
         <button
           onClick={handleMenuClick}
-          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
+          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black flex-shrink-0"
         >
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
+
         {menuOpen && (
-          <div className="absolute right-[-90] top-5 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
+          <div className="absolute right-0 top-0 bg-white z-20 w-28 rounded overflow-hidden shadow-lg border">
             <button
               onClick={handleDeleteClick}
-              className="w-full px-4 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
+              className="w-full px-4 py-2 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
             >
               Delete
             </button>
