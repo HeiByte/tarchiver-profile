@@ -7,6 +7,7 @@ import {
   Upload,
   DatabaseBackup,
   HardDrive,
+  X,
 } from "lucide-react";
 
 const STORAGE_LIMIT_BYTES = 262144000; // 250MB
@@ -104,7 +105,7 @@ function StorageBar() {
   );
 }
 
-export default function Sidebar({ onCreateClick }) {
+export default function Sidebar({ onCreateClick, mobileOpen, setMobileOpen }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -124,50 +125,76 @@ export default function Sidebar({ onCreateClick }) {
     (pathname === "/dashboard" || pathname === "/dashboard/");
 
   return (
-    <aside className="w-48 h-screen bg-[#1E293B] p-4 flex flex-col gap-8 shadow-lg shadow-black">
-      {/* Logo */}
-      <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
-        <img
-          src="logo2.png"
-          alt="MyApps Logo"
-          className="w-20 h-20 ml-4 object-contain"
+    <>
+      {/* Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
         />
-      </div>
+      )}
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-2 text-white items-center text-xs flex-1">
-        {!isBackupsRoute && (
-          <SidebarItem
-            icon={isFolderRoute ? <Upload /> : "Create +"}
-            label={isFolderRoute ? " " : " "}
-            onClick={handleTopButtonClick}
-            customBg="bg-[#3B82F6] text-white justify-center items-center rounded-xl px-4 py-2 transition-all duration-200 hover:bg-[#357AE8] active:bg-[#2F6FD6] active:scale-[0.98] shadow-md hover:shadow-lg"
+      <aside
+        className={`fixed md:static top-0 left-0 z-50 w-64 md:w-48 h-screen bg-[#1e293b] p-4 flex flex-col gap-8 shadow-lg shadow-black transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        <div className="flex justify-end md:hidden">
+          <button onClick={() => setMobileOpen(false)}>
+            <X className="w-6 h-6 text-white" />
+          </button>
+        </div>
+        {/* Logo */}
+        <div className="text-2xl font-bold text-white flex items-center gap-2 p-6">
+          <img
+            src="logo2.png"
+            alt="MyApps Logo"
+            className="w-20 h-20 ml-4 object-contain"
           />
-        )}
+        </div>
 
-        <SidebarItem
-          icon={<LayoutDashboard fill="white" />}
-          label="Dashboard"
-          active={isDashboardActive}
-          onClick={() => router.push("/dashboard")}
-        />
+        {/* Nav */}
+        <nav className="flex flex-col gap-2 text-white items-center text-xs flex-1">
+          {!isBackupsRoute && (
+            <SidebarItem
+              icon={isFolderRoute ? <Upload /> : "Create +"}
+              label={isFolderRoute ? " " : " "}
+              onClick={handleTopButtonClick}
+              customBg="bg-[#3B82F6] text-white justify-center items-center rounded-xl px-4 py-2 transition-all duration-200 hover:bg-[#357AE8] active:bg-[#2F6FD6] active:scale-[0.98] shadow-md hover:shadow-lg"
+            />
+          )}
 
-        <SidebarItem
-          icon={<FolderOpenDot fill="white" />}
-          label="My Files"
-          active={isFolderRoute}
-          onClick={() => router.push("/dashboard")}
-        />
+          <SidebarItem
+            icon={<LayoutDashboard fill="white" />}
+            label="Dashboard"
+            active={isDashboardActive}
+            onClick={() => {
+              router.push("/dashboard");
+              setMobileOpen(false);
+            }}
+          />
 
-        <SidebarItem
-          icon={<DatabaseBackup fill="white" />}
-          label="Backups"
-          active={isBackupsRoute}
-          onClick={() => router.push("/dashboard/backups")}
-        />
-      </nav>
+          <SidebarItem
+            icon={<FolderOpenDot fill="white" />}
+            label="My Files"
+            active={isFolderRoute}
+            onClick={() => {
+              router.push("/dashboard");
+              setMobileOpen(false);
+            }}
+          />
 
-      <StorageBar />
-    </aside>
+          <SidebarItem
+            icon={<DatabaseBackup fill="white" />}
+            label="Backups"
+            active={isBackupsRoute}
+            onClick={() => {
+              router.push("/dashboard/backups");
+              setMobileOpen(false);
+            }}
+          />
+        </nav>
+
+        <StorageBar />
+      </aside>
+    </>
   );
 }

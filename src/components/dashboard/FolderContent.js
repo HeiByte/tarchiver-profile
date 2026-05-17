@@ -246,8 +246,8 @@ export default function FolderContent({ folderId }) {
   );
 
   return (
-    <div className="flex flex-col flex-1 h-screen overflow-hidden">
-      <div className="flex-1 p-8 bg-white m-8 border-[#164B99] border-2 rounded overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-screen overflow-x-hidden">
+      <div className="flex-1 p-3 md:p-8  bg-white m-2 md:m-8 border-[#164B99] border-2 rounded overflow-hidden">
         <input
           type="file"
           id="global-file-upload"
@@ -301,14 +301,14 @@ function UploadingSkeleton() {
 
 const EmptyStateFile = forwardRef(({ onUpload }, ref) => (
   <div className="flex flex-col items-center justify-center h-full">
-    <div className="flex flex-col items-center justify-center border-2 border-blue-500 m-40 text-center p-16 border-dashed">
+    <div className="flex flex-col items-center justify-center border-2 border-blue-500 m-4 md:m-20 text-center p-8 md:p-16 border-dashed w-full max-w-md">
       <button
         onClick={onUpload}
         className="flex items-center justify-center px-4 mb-4 py-2 text-center"
       >
-        <Upload className="bg-[#3B82F6] text-white p-4 w-16 h-16 rounded-md hover:bg-blue-400 active:shadow-none active:translate-y-1 transition-all" />
+        <Upload className="bg-[#3B82F6] text-white p-3 md:p-4 w-14 h-14 md:w-16 md:h-16 rounded-md hover:bg-blue-400 active:shadow-none active:translate-y-1 transition-all" />
       </button>
-      <p className="text-2xl text-black">Upload Files</p>
+      <p className="text-lg md:text-2xl text-black">Upload Files</p>
     </div>
   </div>
 ));
@@ -316,7 +316,7 @@ EmptyStateFile.displayName = "EmptyStateFile";
 
 const FileGrid = forwardRef(({ items, onDeleteClick, onDownloadClick }, ref) => (
   <div className="flex flex-col gap-6 mt-4">
-    <div className="flex flex-col flex-wrap gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {items.map((item) => (
         <FileItem
           key={item.id}
@@ -355,11 +355,11 @@ function FileItem({ file, onDeleteClick, onDownloadClick }) {
 
   return (
     <div
-      className="flex items-center gap-4 cursor-pointer w-full max-w-xs p-2 hover:bg-blue-50 border-2 border-transparent hover:border-blue-600 rounded transition-all relative"
+      className="flex items-center gap-3 cursor-pointer w-full p-3 hover:bg-blue-50 border-2 border-transparent hover:border-blue-600 rounded transition-all relative"
       onMouseLeave={() => setMenuOpen(false)}
     >
       <div className="w-12 h-12 flex items-center justify-center">
-        <FileText className="w-10 h-10 text-white fill-blue-600" />
+        <FileText className="w-8 h-10 md:w-10 md:h-10 text-white fill-blue-600" />
       </div>
       <div className="flex flex-col flex-1 min-w-0">
         <span className="font-bold text-xs text-black truncate">
@@ -373,10 +373,10 @@ function FileItem({ file, onDeleteClick, onDownloadClick }) {
         <EllipsisVertical className="w-5 h-5 text-black" />
       </button>
       {menuOpen && (
-        <div className="absolute right-[-6rem] top-2 bg-white z-10 w-24 rounded overflow-hidden">
+        <div className="absolute right-0 top-12 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
           <button
             onClick={handleDownloadClick}
-            className="w-full px-4 hover:bg-blue-100 text-blue-600 text-xs font-bold border-1 border-blue-600 transition-all"
+            className="w-full px-4 hover:bg-blue-100 text-blue-600 text-sm md:text-base font-bold border-1 border-blue-600 transition-all"
           >
             Download
           </button>

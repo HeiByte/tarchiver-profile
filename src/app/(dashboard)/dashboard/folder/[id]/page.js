@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
-import NavDash from "@/components/dashboard/NavDash";
 import Header from "@/components/dashboard/Header";
 import FolderContent from "@/components/dashboard/FolderContent";
 
@@ -17,7 +16,6 @@ export default function FolderPage() {
 
   return (
     <div className="flex flex-col bg-white h-screen">
-      <NavDash />
       <Header title={title} />
       {folderId && <FolderContent folderId={folderId} />}
     </div>
