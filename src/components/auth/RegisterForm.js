@@ -56,7 +56,7 @@ export default function RegisterForm() {
       if (error) throw error;
 
       if (data?.user) {
-        router.push("/dashboard");
+        router.push("/login");
         router.refresh();
       }
     } catch (err) {

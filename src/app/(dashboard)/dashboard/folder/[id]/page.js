@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
-import NavDash from "@/components/dashboard/NavDash";
 import Header from "@/components/dashboard/Header";
 import FolderContent from "@/components/dashboard/FolderContent";
 
@@ -12,12 +11,10 @@ export default function FolderPage() {
 
   const folder = folders.find((f) => f.id.toString() === folderId);
   
-  // Use the folder name for header, fallback to general if not found yet
   const title = folder ? `Folder: ${folder.name}` : "Folder Not Found";
 
   return (
     <div className="flex flex-col bg-white h-screen">
-      <NavDash />
       <Header title={title} />
       {folderId && <FolderContent folderId={folderId} />}
     </div>

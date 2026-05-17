@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { logout } from "@/components/auth/auth";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
 export default function ProfileActions({ onClose, onEditProfile }) {
   const router = useRouter();
@@ -19,7 +19,6 @@ export default function ProfileActions({ onClose, onEditProfile }) {
 
   const menuItems = [
     { label: "Profile", icon: <User size={14} />, onClick: onEditProfile, active: true },
-    { label: "Setting", icon: <Settings size={14} />, onClick: null, active: false },
   ];
 
   return (

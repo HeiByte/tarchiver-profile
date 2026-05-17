@@ -10,13 +10,13 @@ import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MainContent() {
-  const { folders, setFolders, isLoading, setIsLoading, showToast } = useFolders();
+  const { folders, setFolders, isLoading, setIsLoading, showToast } =
+    useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  // ─── useOptimistic UI───
   const [optimisticFolders, setOptimisticFolders] = useOptimistic(
     folders,
     (currentFolders, deletedId) =>
@@ -29,7 +29,7 @@ export default function MainContent() {
 
   useEffect(() => {
     const fetchFolders = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const {
           data: { user },
@@ -59,7 +59,7 @@ export default function MainContent() {
       } catch (error) {
         showToast("Failed to load folder: " + error.message, "error");
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -102,7 +102,6 @@ export default function MainContent() {
     }
   };
 
-  // ─── Hapus folder dengan Optimistic UI ───────────────────────────────────
   const handleDeleteConfirm = () => {
     if (!folderToDelete) return;
 
@@ -152,8 +151,8 @@ export default function MainContent() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden">
-      <div className="flex-1 p-6 bg-white m-6 border-[#164B99] border-2 rounded overflow-hidden relative">
+    <div className="flex flex-col h-full bg-white overflow-x-hidden">
+      <div className="flex-1 min-h-0 p-3 md:p-6 bg-white m-2 md:m-6 border-[#164B99] border-2 rounded overflow-y-auto relative">
         {isLoading ? (
           <FolderGridSkeleton />
         ) : optimisticFolders.length === 0 ? (
@@ -188,7 +187,7 @@ function FolderGridSkeleton() {
   return (
     <div className="flex flex-col gap-6">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 max-w-sm p-2">
+        <div key={i} className="flex items-center gap-4 w-full p-2">
           <Skeleton className="w-10 h-10 rounded-md flex-shrink-0" />
           <Skeleton className="h-4 flex-1 rounded-md" />
           <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
@@ -203,7 +202,7 @@ function EmptyState({ onAdd }) {
     <div className="flex flex-col items-center justify-center h-full">
       <button
         onClick={onAdd}
-        className="px-6 py-2 bg-[#3B82F6] text-white border-2 rounded-md hover:bg-blue-600"
+        className="px-5 md:px-6 py-2 text-sm md:text-base bg-[#3B82F6] text-white border-2 rounded-md hover:bg-blue-600"
       >
         Create +
       </button>
@@ -213,7 +212,7 @@ function EmptyState({ onAdd }) {
 
 function FolderGrid({ items, onDeleteClick }) {
   return (
-    <div className="flex flex-col flex-wrap gap-4 overflow-y-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-6">
       {items.map((item) => (
         <FolderItem
           key={item.id}
@@ -232,7 +231,7 @@ function FolderItem({ id, name, onDeleteClick }) {
   const handleMenuClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuOpen(!menuOpen);
+    setMenuOpen((prev) => !prev);
   };
 
   const handleDeleteClick = (e) => {
@@ -245,24 +244,25 @@ function FolderItem({ id, name, onDeleteClick }) {
   return (
     <Link href={`/dashboard/folder/${id}`}>
       <div
-        className="flex items-center gap-4 cursor-pointer relative max-w-sm hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all p-2 rounded"
+        className="flex items-center gap-3 cursor-pointer relative w-full min-h-[70px] hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all p-3 rounded"
         onMouseLeave={() => setMenuOpen(false)}
       >
-        <Folder className="w-8 h-8 fill-black" />
-        <span className="font-bold text-xs mt-1 text-black flex-1 truncate">
+        <Folder className="w-6 h-6 md:w-8 md:h-8 fill-black flex-shrink-0" />
+        <span className="font-bold text-sm md:text-base text-black flex-1 truncate break-all">
           {name}
         </span>
         <button
           onClick={handleMenuClick}
-          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
+          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black flex-shrink-0"
         >
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
+
         {menuOpen && (
-          <div className="absolute right-[-6rem] top-2 bg-white z-10 w-24 rounded overflow-hidden">
+          <div className="absolute right-0 top-0 bg-white z-20 w-28 rounded overflow-hidden shadow-lg border">
             <button
               onClick={handleDeleteClick}
-              className="w-full px-4 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
+              className="w-full px-4 py-2 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
             >
               Delete
             </button>
