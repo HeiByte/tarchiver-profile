@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState, useOptimistic, useTransition } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
-import { EllipsisVertical, FileText, Upload, Loader2 } from "lucide-react";
+import { EllipsisVertical, FileText, Upload, Loader2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { forwardRef } from "react";
 import ConfirmModal from "./ConfirmModal";
@@ -12,9 +12,7 @@ import { z } from "zod";
 
 function broadcastStorageUpdate() {
   try {
-  
     window.dispatchEvent(new Event("storage_update"));
-
     const channel = new BroadcastChannel("storage_update");
     channel.postMessage("refresh");
     channel.close();
@@ -33,10 +31,11 @@ export default function FolderContent({ folderId }) {
   const [uploading, setUploading] = useState(false);
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
+  
+  const router = useRouter();
 
   const folder = folders.find((f) => f.id.toString() === folderId);
 
-  // ─── useOptimistic UI ────────
   const [optimisticFiles, setOptimisticFiles] = useOptimistic(
     folder?.files ?? [],
     (currentFiles, deletedId) => currentFiles.filter((f) => f.id !== deletedId),
@@ -161,9 +160,7 @@ export default function FolderContent({ folderId }) {
         ),
       );
 
-     
       broadcastStorageUpdate();
-
       showToast("File uploaded successfully!");
     } catch (error) {
       console.error(error);
@@ -174,7 +171,6 @@ export default function FolderContent({ folderId }) {
     }
   };
 
-  // ─── Delete via backend ─────────
   const handleDeleteConfirm = () => {
     if (!fileToDelete?.id) {
       showToast("Failed: Invalid File ID", "error");
@@ -185,7 +181,6 @@ export default function FolderContent({ folderId }) {
     setFileToDelete(null);
 
     startTransition(async () => {
-      // Optimistic
       setOptimisticFiles(targetFile.id);
 
       try {
@@ -199,7 +194,6 @@ export default function FolderContent({ folderId }) {
           throw new Error(result.error || "Delete failed");
         }
 
-  
         setFolders((prev) =>
           prev.map((f) =>
             f.id === targetFile.folder_id
@@ -211,9 +205,7 @@ export default function FolderContent({ folderId }) {
           ),
         );
 
-      
         broadcastStorageUpdate();
-
         showToast("File deleted permanently", "success");
       } catch (error) {
         console.error("Detail Error:", error);
@@ -229,7 +221,6 @@ export default function FolderContent({ folderId }) {
 
       if (!response.ok) throw new Error(result.error || "Download failed");
 
-     
       const a = document.createElement("a");
       a.href = result.url;
       a.download = file.original_name || file.name;
@@ -246,8 +237,26 @@ export default function FolderContent({ folderId }) {
   );
 
   return (
-    <div className="flex flex-col flex-1 min-h-screen overflow-x-hidden">
-      <div className="flex-1 p-3 md:p-8  bg-white m-2 md:m-8 border-[#164B99] border-2 rounded overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 p-3 md:p-8 bg-white m-2 md:m-8 border-[#164B99] border-2 rounded overflow-y-auto">
+        
+     
+        <div className="mb-4 flex items-center gap-3">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
+          {folder.name && (
+            <>
+              <span className="text-slate-300">/</span>
+              <span className="text-sm font-bold text-slate-700">{folder.name}</span>
+            </>
+          )}
+        </div>
+
         <input
           type="file"
           id="global-file-upload"
@@ -373,16 +382,16 @@ function FileItem({ file, onDeleteClick, onDownloadClick }) {
         <EllipsisVertical className="w-5 h-5 text-black" />
       </button>
       {menuOpen && (
-        <div className="absolute right-0 top-12 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
+        <div className="absolute right-[-90] top-1/2 -translate-y-1/2 bg-white z-10 w-28 rounded overflow-hidden shadow-lg border">
           <button
             onClick={handleDownloadClick}
-            className="w-full px-4 hover:bg-blue-100 text-blue-600 text-sm md:text-base font-bold border-1 border-blue-600 transition-all"
+            className="w-full px-3 py-1.5 hover:bg-blue-100 text-blue-600 text-xs font-bold border-b border-gray-100 transition-all"
           >
             Download
           </button>
           <button
             onClick={handleDeleteClick}
-            className="w-full px-4 hover:bg-red-100 text-red-600 text-xs font-bold border-1 border-blue-600 transition-all"
+            className="w-full px-3 py-1.5 hover:bg-red-100 text-red-600 text-xs font-bold transition-all"
           >
             Delete
           </button>

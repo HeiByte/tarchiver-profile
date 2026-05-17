@@ -1,8 +1,65 @@
-import React from 'react';
+"use client";
+import React, { useState } from 'react';
 import Image from 'next/image';
+import emailjs from '@emailjs/browser';
+import { z } from 'zod';
 import gambar6 from '@/assets/gambar6.jpg';
 
+const contactSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  email: z.string().min(1, "Email is required.").email("Invalid email format."),
+  message: z.string().min(10, "Message must be at least 10 characters."),
+});
+
+const SERVICE_ID = "service_ek02tot";
+const TEMPLATE_ID = "template_br6jzip";
+const PUBLIC_KEY = "TyU4z5OmXvc4HWWN5";
+
 export default function ContactPage() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
+    if (errors[id]) setErrors((prev) => ({ ...prev, [id]: undefined }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus(null);
+
+    const result = contactSchema.safeParse(form);
+    if (!result.success) {
+      setErrors(result.error.flatten().fieldErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          from_name: form.name,
+          from_email: form.email,
+          message: form.message,
+        },
+        PUBLIC_KEY
+      );
+      setStatus("success");
+      setForm({ name: "", email: "", message: "" });
+      setErrors({});
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-secondary/30">
       <main className="max-w-6xl mx-auto px-6 py-24 md:py-32">
@@ -13,7 +70,7 @@ export default function ContactPage() {
             <header className="mb-12">
               <h2 className="text-sm font-bold tracking-widest uppercase text-hover mb-6 flex items-center">
                 <span className="w-8 h-[2px] bg-hover mr-4"></span>
-                Let’s Connect
+                Let's Connect
               </h2>
               <h1 className="text-4xl md:text-5xl font-black text-primary leading-tight mb-8">
                 Have a question, feedback, or just curious?
@@ -41,15 +98,15 @@ export default function ContactPage() {
                   <a href="mailto:tarchiverlite@example.com" className="block text-2xl font-medium text-primary hover:text-hover transition-colors">
                     tarchiverlite@example.com
                   </a>
-                  <a href="tel:+62812XXXXXXX" className="block text-2xl font-medium text-primary hover:text-hover transition-colors">
+                  {/* <a href="tel:+62812XXXXXXX" className="block text-2xl font-medium text-primary hover:text-hover transition-colors">
                     +62 812-XXXX-XXXX
-                  </a>
+                  </a> */}
                 </div>
               </div>
 
               <div className="pt-12 border-t border-slate-100">
                 <p className="text-slate-500 italic">
-                  We’ll get back to you as soon as possible.
+                  We'll get back to you as soon as possible.
                 </p>
               </div>
             </div>
@@ -60,7 +117,7 @@ export default function ContactPage() {
               Hi!
             </div>
             
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-bold text-primary ml-1">Name</label>
@@ -68,8 +125,11 @@ export default function ContactPage() {
                     type="text" 
                     id="name" 
                     placeholder="John Doe"
-                    className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all"
+                    value={form.name}
+                    onChange={handleChange}
+                    className={`w-full bg-white border rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all ${errors.name ? "border-red-400" : "border-slate-200"}`}
                   />
+                  {errors.name && <p className="text-red-500 text-xs ml-1">{errors.name[0]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-bold text-primary ml-1">Email</label>
@@ -77,8 +137,11 @@ export default function ContactPage() {
                     type="email" 
                     id="email" 
                     placeholder="john@example.com"
-                    className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all"
+                    value={form.email}
+                    onChange={handleChange}
+                    className={`w-full bg-white border rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all ${errors.email ? "border-red-400" : "border-slate-200"}`}
                   />
+                  {errors.email && <p className="text-red-500 text-xs ml-1">{errors.email[0]}</p>}
                 </div>
               </div>
               
@@ -88,15 +151,37 @@ export default function ContactPage() {
                   id="message" 
                   rows="5" 
                   placeholder="How can we help you?"
-                  className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all resize-none"
+                  value={form.message}
+                  onChange={handleChange}
+                  className={`w-full bg-white border rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-hover/20 focus:border-hover transition-all resize-none ${errors.message ? "border-red-400" : "border-slate-200"}`}
                 ></textarea>
+                {errors.message && <p className="text-red-500 text-xs ml-1">{errors.message[0]}</p>}
               </div>
 
+              {status === "success" && (
+                <p className="text-green-600 font-medium text-sm text-center">
+                  ✓ Message sent! We'll get back to you soon.
+                </p>
+              )}
+              {status === "error" && (
+                <p className="text-red-500 font-medium text-sm text-center">
+                  ✕ Something went wrong. Please try again.
+                </p>
+              )}
+
               <button 
-                type="submit" 
-                className="w-full bg-primary text-white font-bold py-5 rounded-2xl hover:bg-hover transition-all shadow-xl shadow-primary/20 transform active:scale-95"
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-white font-bold py-5 rounded-2xl hover:bg-hover transition-all shadow-xl shadow-primary/20 transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Send Message
+                {loading ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    Sending...
+                  </>
+                ) : (
+                  "Send Message"
+                )}
               </button>
             </form>
           </div>

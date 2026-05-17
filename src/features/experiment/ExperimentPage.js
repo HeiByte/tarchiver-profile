@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { searchWiki, getWikiDetail } from "@/lib/api";
+import { Search } from "lucide-react";
 
 export default function ExperimentPage() {
   const [query, setQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
 
@@ -13,15 +15,18 @@ export default function ExperimentPage() {
     setSelected(data);
   }
 
+  const handleSearch = () => {
+    if (inputValue.trim()) setQuery(inputValue.trim());
+  };
+
   useEffect(() => {
+    if (!query) return;
+
     const timeout = setTimeout(async () => {
-      if (!query) return;
-
       const data = await searchWiki(query);
-
       console.log("SEARCH RESULT JSON:", data);
       setResults(data.pages);
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [query]);
@@ -31,14 +36,23 @@ export default function ExperimentPage() {
       <h1 className="text-primary text-center uppercase p-2 text-2xl tracking-widest mb-6">
         Browse Articles
       </h1>
-      <div className="mb-6">
+
+      <div className="mb-6 flex gap-2">
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           placeholder="Search Wikipedia..."
-          className="w-full px-5 py-3 rounded-full border text-primary border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+          className="flex-1 px-5 py-3 rounded-full border text-primary border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
         />
+        <button
+          onClick={handleSearch}
+          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold rounded-full shadow-sm transition-all"
+        >
+          <Search className="w-4 h-4" />
+          <span className="hidden sm:inline">Search</span>
+        </button>
       </div>
 
       <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-8">
