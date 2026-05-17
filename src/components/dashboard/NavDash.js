@@ -20,7 +20,7 @@ export default function NavDash({ setMobileOpen }) {
   };
 
   return (
-    <div className="flex justify-between items-center mb-4 shadow-md bg-white px-4 py-2 sticky z-[9999]">
+    <div className="flex justify-between items-center mb-4 shadow-md bg-white px-4 py-2 sticky top-0 z-[60]">
       {/* LEFT SIDE */}
       <div className="flex item-center gap-3 w-full">
         {/* Button Mobile */}

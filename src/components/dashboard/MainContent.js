@@ -260,7 +260,7 @@ function FolderItem({ id, name, onDeleteClick }) {
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
         {menuOpen && (
-          <div className="absolute right-0 top-12 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
+          <div className="absolute right-[-90] top-5 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
             <button
               onClick={handleDeleteClick}
               className="w-full px-4 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
