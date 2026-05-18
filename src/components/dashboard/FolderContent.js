@@ -175,6 +175,7 @@ function FolderContentInner({ folderId }) {
     setFileToDelete(null);
 
     startTransition(async () => {
+      // Optimistic
       setOptimisticFiles(targetFile.id);
 
       try {
@@ -188,6 +189,7 @@ function FolderContentInner({ folderId }) {
           throw new Error(result.error || "Delete failed");
         }
 
+  
         setFolders((prev) =>
           prev.map((f) =>
             f.id === targetFile.folder_id
