@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { updateProfile } from "@/components/auth/auth";
+import { updateProfile } from "@/actions/auth";
 import {
   ChevronLeft,
   Check,

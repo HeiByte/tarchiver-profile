@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { login } from "@/components/auth/auth";
+import { login } from "@/actions/auth";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -24,6 +24,8 @@ export default function LoginForm() {
       if (res.success) {
         router.push("/dashboard");
         router.refresh();
+      } else if (res.unverified) {
+        router.push(`/verify-email?email=${encodeURIComponent(res.email)}`);
       } else {
         setErrorMsg(res.error);
       }
@@ -72,7 +74,7 @@ export default function LoginForm() {
 
       {/* FORGOT */}
       <div className="text-right mb-6">
-        <Link href="#" className="text-primary text-sm hover:underline">
+        <Link href="/forgot-password" className="text-primary text-sm hover:underline">
           Forgot Password?
         </Link>
       </div>
@@ -93,7 +95,6 @@ export default function LoginForm() {
           Signup
         </Link>
       </p>
-      
     </form>
   );
 }
