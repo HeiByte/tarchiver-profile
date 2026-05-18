@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useOptimistic, useTransition } from "react";
+import { Suspense, useRef, useState, useOptimistic, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useFolders } from "@/context/FolderContext";
 import { EllipsisVertical, FileText, Upload, Loader2, ChevronLeft } from "lucide-react";
@@ -8,7 +8,6 @@ import { forwardRef } from "react";
 import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
-
 
 function broadcastStorageUpdate() {
   try {
@@ -24,14 +23,13 @@ const uploadSchema = z.object({
   fileName: z.string().min(1, "File name cannot be empty."),
 });
 
-export default function FolderContent({ folderId }) {
+function FolderContentInner({ folderId }) {
   const { folders, setFolders, isLoading, showToast } = useFolders();
   const fileInputRef = useRef(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [uploading, setUploading] = useState(false);
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
-  
   const router = useRouter();
 
   const folder = folders.find((f) => f.id.toString() === folderId);
@@ -70,8 +68,7 @@ export default function FolderContent({ folderId }) {
 
   let acceptStr = "*";
   if (folder.type === "doc")
-    acceptStr =
-      ".doc,.docx,.pdf,.txt,application/pdf,application/msword,text/plain";
+    acceptStr = ".doc,.docx,.pdf,.txt,application/pdf,application/msword,text/plain";
   else if (folder.type === "media")
     acceptStr = "video/mp4,audio/mpeg,audio/mp3,.mp4,.mp3";
   else if (folder.type === "image") acceptStr = "image/*";
@@ -118,10 +115,7 @@ export default function FolderContent({ folderId }) {
         media: "This folder only accepts Media (MP4, MP3).",
         image: "This folder only accepts Images (PNG, JPG, etc).",
       };
-      showToast(
-        msgs[folder.type] || "Upload failed: File type mismatch.",
-        "error",
-      );
+      showToast(msgs[folder.type] || "Upload failed: File type mismatch.", "error");
       e.target.value = "";
       return;
     }
@@ -199,10 +193,7 @@ export default function FolderContent({ folderId }) {
         setFolders((prev) =>
           prev.map((f) =>
             f.id === targetFile.folder_id
-              ? {
-                  ...f,
-                  files: f.files.filter((file) => file.id !== targetFile.id),
-                }
+              ? { ...f, files: f.files.filter((file) => file.id !== targetFile.id) }
               : f,
           ),
         );
@@ -233,15 +224,12 @@ export default function FolderContent({ folderId }) {
   };
 
   const filteredFiles = optimisticFiles.filter((file) =>
-    (file.original_name || file.name)
-      .toLowerCase()
-      .includes(query.toLowerCase()),
+    (file.original_name || file.name).toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-1 p-3 md:p-8 bg-white m-2 md:m-8 border-[#164B99] border-2 rounded overflow-y-auto">
-        
         <div className="mb-4 flex items-center gap-3">
           <button
             onClick={() => router.push("/dashboard")}
@@ -291,6 +279,14 @@ export default function FolderContent({ folderId }) {
         />
       </div>
     </div>
+  );
+}
+
+export default function FolderContent({ folderId }) {
+  return (
+    <Suspense fallback={null}>
+      <FolderContentInner folderId={folderId} />
+    </Suspense>
   );
 }
 
@@ -372,9 +368,7 @@ function FileItem({ file, onDeleteClick, onDownloadClick }) {
         <FileText className="w-8 h-10 md:w-10 md:h-10 text-white fill-blue-600" />
       </div>
       <div className="flex flex-col flex-1 min-w-0">
-        <span className="font-bold text-xs text-black truncate">
-          {file.name}
-        </span>
+        <span className="font-bold text-xs text-black truncate">{file.name}</span>
       </div>
       <button
         onClick={handleMenuClick}
