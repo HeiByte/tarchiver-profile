@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useOptimistic, useTransition } from "react";
+import { Suspense, useState, useEffect, useOptimistic, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import CreateFolder from "./CreateFolder";
@@ -9,19 +9,16 @@ import Link from "next/link";
 import ConfirmModal from "./ConfirmModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function MainContent() {
-  const { folders, setFolders, isLoading, setIsLoading, showToast } =
-    useFolders();
+function MainContentInner() {
+  const { folders, setFolders, isLoading, setIsLoading, showToast } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  // ─── useOptimistic UI───
   const [optimisticFolders, setOptimisticFolders] = useOptimistic(
     folders,
-    (currentFolders, deletedId) =>
-      currentFolders.filter((f) => f.id !== deletedId),
+    (currentFolders, deletedId) => currentFolders.filter((f) => f.id !== deletedId),
   );
 
   const [isPending, startTransition] = useTransition();
@@ -32,9 +29,7 @@ export default function MainContent() {
     const fetchFolders = async () => {
       setIsLoading(true);
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) return;
 
@@ -82,9 +77,7 @@ export default function MainContent() {
     }
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
@@ -103,7 +96,6 @@ export default function MainContent() {
     }
   };
 
-  // ─── Hapus folder dengan Optimistic UI ───────────────────────────────────
   const handleDeleteConfirm = () => {
     if (!folderToDelete) return;
 
@@ -114,17 +106,13 @@ export default function MainContent() {
       setOptimisticFolders(idToDelete);
 
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("User not authenticated");
 
         const targetFolder = folders.find((f) => f.id === idToDelete);
 
         if (targetFolder?.files?.length > 0) {
-          const storagePaths = targetFolder.files
-            .map((f) => f.storage_path)
-            .filter(Boolean);
+          const storagePaths = targetFolder.files.map((f) => f.storage_path).filter(Boolean);
 
           if (storagePaths.length > 0) {
             const { error: storageError } = await supabase.storage
@@ -137,10 +125,7 @@ export default function MainContent() {
           }
         }
 
-        const { error } = await supabase
-          .from("folders")
-          .delete()
-          .eq("id", idToDelete);
+        const { error } = await supabase.from("folders").delete().eq("id", idToDelete);
 
         if (error) throw error;
 
@@ -160,10 +145,7 @@ export default function MainContent() {
         ) : optimisticFolders.length === 0 ? (
           <EmptyState onAdd={() => setIsModalOpen(true)} />
         ) : (
-          <FolderGrid
-            items={optimisticFolders}
-            onDeleteClick={setFolderToDelete}
-          />
+          <FolderGrid items={optimisticFolders} onDeleteClick={setFolderToDelete} />
         )}
 
         <CreateFolder
@@ -182,6 +164,14 @@ export default function MainContent() {
         />
       </div>
     </div>
+  );
+}
+
+export default function MainContent() {
+  return (
+    <Suspense fallback={null}>
+      <MainContentInner />
+    </Suspense>
   );
 }
 
@@ -216,12 +206,7 @@ function FolderGrid({ items, onDeleteClick }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-6">
       {items.map((item) => (
-        <FolderItem
-          key={item.id}
-          id={item.id}
-          name={item.name}
-          onDeleteClick={onDeleteClick}
-        />
+        <FolderItem key={item.id} id={item.id} name={item.name} onDeleteClick={onDeleteClick} />
       ))}
     </div>
   );
@@ -233,7 +218,7 @@ function FolderItem({ id, name, onDeleteClick }) {
   const handleMenuClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuOpen(!menuOpen);
+    setMenuOpen((prev) => !prev);
   };
 
   const handleDeleteClick = (e) => {
@@ -255,15 +240,16 @@ function FolderItem({ id, name, onDeleteClick }) {
         </span>
         <button
           onClick={handleMenuClick}
-          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black"
+          className="p-2 hover:bg-gray-200 rounded-full border-2 border-transparent hover:border-black flex-shrink-0"
         >
           <EllipsisVertical className="w-5 h-5 text-black" />
         </button>
+
         {menuOpen && (
-          <div className="absolute right-[-90] top-5 bg-white z-10 w-24 rounded overflow-hidden shadow-lg border">
+          <div className="absolute right-0 top-0 bg-white z-20 w-28 rounded overflow-hidden shadow-lg border">
             <button
               onClick={handleDeleteClick}
-              className="w-full px-4 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
+              className="w-full px-4 py-2 hover:bg-red-100 text-sm text-red-600 font-bold border-2 border-black transition-all"
             >
               Delete
             </button>

@@ -28,14 +28,14 @@ export default function ResetPasswordPage() {
 
   const supabase = createClient();
 
-  // Verify user has a valid recovery session before showing form
+  
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setSessionReady(true);
       } else {
-        // No valid session — redirect
+  
         setStatus("error");
         setMessage("Your reset link is invalid or has expired. Please request a new one.");
       }
@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
 
       if (error) throw error;
 
-      // Sign out after password reset for security
+    
       await supabase.auth.signOut();
 
       setStatus("success");

@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
       if (isRateLimit) {
         setStatus("error");
         setMessage(
-          "Too many requests. Please wait about 1 hour before trying again.",
+          "Too many requests. Please wait about 2 hour before trying again.",
         );
       } else {
         setStatus("success");
