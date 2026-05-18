@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email") || "";
 
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const [status, setStatus] = useState(null); // "success" | "error"
+  const [status, setStatus] = useState(null);
   const [message, setMessage] = useState("");
 
   const supabase = createClient();
@@ -29,7 +29,6 @@ export default function VerifyEmailPage() {
     checkVerified();
   }, []);
 
-  // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
@@ -76,7 +75,6 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white border-2 border-[#164B99] rounded-xl shadow-md p-8">
-        {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-blue-50 border-2 border-[#164B99] rounded-full flex items-center justify-center">
             <svg
@@ -113,7 +111,6 @@ export default function VerifyEmailPage() {
           your account.
         </p>
 
-        {/* Status message */}
         {status === "success" && (
           <div className="mb-4 px-4 py-3 rounded-lg border-2 border-green-500 bg-green-50 text-green-700 text-sm text-center">
             {message}
@@ -125,7 +122,6 @@ export default function VerifyEmailPage() {
           </div>
         )}
 
-        {/* Resend button */}
         <button
           onClick={handleResend}
           disabled={loading || cooldown > 0}
@@ -159,5 +155,13 @@ export default function VerifyEmailPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyEmailPageInner />
+    </Suspense>
   );
 }
