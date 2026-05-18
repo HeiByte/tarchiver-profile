@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { Search, Menu } from "lucide-react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import ProfileCard from "../profile/ProfileCard";
 
-export default function NavDash({ setMobileOpen }) {
+function NavDashInner({ setMobileOpen }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -21,10 +22,7 @@ export default function NavDash({ setMobileOpen }) {
 
   return (
     <div className="flex justify-between items-center mb-4 shadow-md bg-white px-4 py-2 sticky top-0 z-[60]">
-      {/* LEFT SIDE */}
       <div className="flex item-center gap-3 w-full">
-        {/* Button Mobile */}
-
         <button
           onClick={() => setMobileOpen(true)}
           className="md:hidden bg-[#1E293B] text-white p-2 rounded-lg"
@@ -32,7 +30,6 @@ export default function NavDash({ setMobileOpen }) {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Search Bar */}
         <div className="relative w-1/2">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={14} className="text-black" />
@@ -47,10 +44,17 @@ export default function NavDash({ setMobileOpen }) {
         </div>
       </div>
 
-      {/* Profile */}
       <div className="flex items-center gap-2">
         <ProfileCard />
       </div>
     </div>
+  );
+}
+
+export default function NavDash({ setMobileOpen }) {
+  return (
+    <Suspense fallback={null}>
+      <NavDashInner setMobileOpen={setMobileOpen} />
+    </Suspense>
   );
 }
